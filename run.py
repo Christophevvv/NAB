@@ -54,12 +54,14 @@ def main(args):
   resultsDir = os.path.join(root, args.resultsDir)
   profilesFile = os.path.join(root, args.profilesFile)
   thresholdsFile = os.path.join(root, args.thresholdsFile)
+  parametersFile = os.path.join(root,args.parametersFile)
 
   runner = Runner(dataDir=dataDir,
                   labelPath=windowsFile,
                   resultsDir=resultsDir,
                   profilesPath=profilesFile,
                   thresholdPath=thresholdsFile,
+                  parametersPath=parametersFile,
                   numCPUs=numCPUs)
 
   runner.initialize()
@@ -147,6 +149,11 @@ if __name__ == "__main__":
                     default=os.path.join("config", "thresholds.json"),
                     help="The configuration file that stores thresholds for "
                     "each combination of detector and username")
+  
+  parser.add_argument("-m", "--parametersFile",
+                      default=os.path.join("config","detectorparams.json"),
+                      help="The configuration file that stores the parameters for "
+                      " each detector.")
 
   parser.add_argument("-n", "--numCPUs",
                     default=None,

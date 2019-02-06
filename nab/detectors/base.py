@@ -37,11 +37,13 @@ class AnomalyDetector(object):
 
   def __init__( self,
                 dataSet,
-                probationaryPercent):
+                probationaryPercent,
+                parameters):
 
     self.dataSet = dataSet
     self.probationaryPeriod = getProbationPeriod(
       probationaryPercent, dataSet.data.shape[0])
+    self.parameters = parameters
 
     self.inputMin = self.dataSet.data["value"].min()
     self.inputMax = self.dataSet.data["value"].max()

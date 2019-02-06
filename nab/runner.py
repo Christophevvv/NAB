@@ -31,7 +31,7 @@ from nab.detectors.base import detectDataSet
 from nab.labeler import CorpusLabel
 from nab.optimizer import optimizeThreshold
 from nab.scorer import scoreCorpus
-from nab.util import updateThresholds, updateFinalResults
+from nab.util import updateThresholds, updateFinalResults, detectorNameToClass
 
 
 
@@ -47,6 +47,7 @@ class Runner(object):
                labelPath,
                profilesPath,
                thresholdPath,
+               parametersPath,
                numCPUs=None):
     """
     @param dataDir        (string)  Directory where all the raw datasets exist.
@@ -64,6 +65,9 @@ class Runner(object):
                                     best thresholds (and their corresponding
                                     score) for a combination of detector and
                                     user profile.
+                                    
+    @param parametersPath (string)  Path to parameters file containing the parameters to use
+                                    for each detector (if applicable to detector).
 
     @probationaryPercent  (float)   Percent of each dataset which will be
                                     ignored during the scoring process.
@@ -77,6 +81,7 @@ class Runner(object):
     self.labelPath = labelPath
     self.profilesPath = profilesPath
     self.thresholdPath = thresholdPath
+    self.parametersPath = parametersPath
     self.pool = multiprocessing.Pool(numCPUs)
 
     self.probationaryPercent = 0.15
@@ -85,6 +90,7 @@ class Runner(object):
     self.corpus = None
     self.corpusLabel = None
     self.profiles = None
+    self.parameters = None
 
 
   def initialize(self):
@@ -94,7 +100,10 @@ class Runner(object):
 
     with open(self.profilesPath) as p:
       self.profiles = json.load(p)
-
+      
+    with open(self.parametersPath) as p:
+      self.parameters = json.load(p)
+    
 
   def detect(self, detectors):
     """Generate results file given a dictionary of detector classes
@@ -119,7 +128,9 @@ class Runner(object):
               count,
               detectorConstructor(
                 dataSet=dataSet,
-                probationaryPercent=self.probationaryPercent),
+                probationaryPercent=self.probationaryPercent,
+                parameters=self.parameters[detectorName] 
+                if self.parameters.has_key(detectorName) else None),
               detectorName,
               self.corpusLabel.labels[relativePath]["label"],
               self.resultsDir,
