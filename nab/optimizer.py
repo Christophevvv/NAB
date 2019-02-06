@@ -27,10 +27,21 @@ from nab.util import convertResultsPathToDataPath
 def optimizeThreshold(args):
   """Optimize the threshold for a given combination of detector and profile.
 
-  @param args       (tuple)   Arguments necessary for the objective function.
+  @param args       (tuple)   Contains:
 
-  @param tolerance  (float)   Number used to determine when optimization has
-                              converged to a sufficiently good score.
+    detectorName        (string)                Name of detector.
+
+    costMatrix          (dict)                  Cost matrix to weight the
+                                                true positives, false negatives,
+                                                and false positives during
+                                                scoring.
+    resultsCorpus       (nab.Corpus)            Corpus object that holds the per
+                                                record anomaly scores for a
+                                                given detector.
+    corpusLabel         (nab.CorpusLabel)       Ground truth anomaly labels for
+                                                the NAB corpus.
+    probationaryPercent (float)                 Percent of each data file not
+                                                to be considered during scoring.
 
   @return (dict) Contains:
         "threshold" (float)   Threshold that returns the largest score from the
@@ -39,15 +50,11 @@ def optimizeThreshold(args):
         "score"     (float)   The score from the objective function given the
                               threshold.
   """
-  (pool,
-   detectorName,
-   profileName,
+  (detectorName,
    costMatrix,
-   resultsDetectorDir,
    resultsCorpus,
    corpusLabel,
-   probationaryPercent,
-   scoreFlag) = args
+   probationaryPercent) = args
 
   sweeper = Sweeper(
     probationPercent=probationaryPercent,
@@ -62,7 +69,7 @@ def optimizeThreshold(args):
 
     # relativePath: raw dataset file,
     # e.g. 'artificialNoAnomaly/art_noisy.csv'
-    relativePath = convertResultsPathToDataPath( \
+    relativePath = convertResultsPathToDataPath(
       os.path.join(detectorName, relativePath))
 
     windows = corpusLabel.windows[relativePath]
@@ -80,7 +87,8 @@ def optimizeThreshold(args):
 
   # Get scores by threshold for the entire corpus
   scoresByThreshold = sweeper.calcScoreByThreshold(allAnomalyRows)
-  scoresByThreshold = sorted(scoresByThreshold, key=lambda x: x.score, reverse=True)
+  scoresByThreshold = sorted(
+    scoresByThreshold,key=lambda x: x.score, reverse=True)
   bestParams = scoresByThreshold[0]
 
   print("Optimizer found a max score of {} with anomaly threshold {}.".format(

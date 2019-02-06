@@ -72,7 +72,7 @@ def scoreCorpus(threshold, args):
 
     # relativePath: raw dataset file,
     # e.g. 'artificialNoAnomaly/art_noisy.csv'
-    relativePath = convertResultsPathToDataPath( \
+    relativePath = convertResultsPathToDataPath(
       os.path.join(detectorName, relativePath))
 
     # outputPath: dataset results file,
@@ -175,9 +175,9 @@ def scoreDataSet(args):
 
   if scoreFlag:
     # Append scoring function values to the respective results file
-    df_csv = pandas.read_csv(outputPath, header=0, parse_dates=[0])
-    df_csv["S(t)_%s" % profileName] = scores
-    df_csv.to_csv(outputPath, index=False)
+    dfCSV = pandas.read_csv(outputPath, header=0, parse_dates=[0])
+    dfCSV["S(t)_%s" % profileName] = scores
+    dfCSV.to_csv(outputPath, index=False)
 
   return (detectorName, profileName, relativePath, threshold, bestRow.score,
           bestRow.tp, bestRow.tn, bestRow.fp, bestRow.fn, bestRow.total)
