@@ -63,7 +63,8 @@ def createRunner(resultsDir, profileName, resultsName=None):
                       resultsDir=resultsDir,
                       labelPath=labelPath,
                       profilesPath=None,
-                      thresholdPath=None)
+                      thresholdPath=None,
+                      parametersPath=None)
 
   testRunner.profiles = {
     profileName: {
@@ -107,7 +108,8 @@ class NormalizationTest(unittest.TestCase):
                         resultsDir='',
                         labelPath=None,
                         profilesPath=None,
-                        thresholdPath=None)
+                        thresholdPath=None,
+                        parametersPath=None)
 
     # Should fail due to resultsDir/null not being a directory.
     with self.assertRaises(IOError):

@@ -26,11 +26,7 @@ import random
 import unittest
 
 from nab.sweeper import Sweeper
-<<<<<<< HEAD
-from nab.test_helpers import generateTimestamps, generateWindows, generateLabels
-=======
 from nab.test_helpers import generateTimestamps, generateWindows
->>>>>>> 33bcc77f7924ff57ad59787af9311612883a7b1c
 
 
 
@@ -186,10 +182,6 @@ class ScorerTest(unittest.TestCase):
     
     timestamps = generateTimestamps(start, increment, length)
     windows = []
-<<<<<<< HEAD
-    labels = generateLabels(timestamps, windows)
-=======
->>>>>>> 33bcc77f7924ff57ad59787af9311612883a7b1c
     anomalyScores = pandas.Series([0]*length)
     
     costMatrixFP = copy.deepcopy(self.costMatrix)
