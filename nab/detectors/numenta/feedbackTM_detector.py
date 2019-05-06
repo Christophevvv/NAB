@@ -61,7 +61,7 @@ class FeedbackTMDetector(AnomalyDetector):
     # without using AnomalyLikelihood. This will give worse results, but
     # useful for checking the efficacy of AnomalyLikelihood. You will need
     # to re-optimize the thresholds when running with this setting.
-    self.useLikelihood = False
+    self.useLikelihood = True
     
     self.tempMem = None
     
