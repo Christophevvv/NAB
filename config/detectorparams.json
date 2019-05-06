@@ -101,7 +101,7 @@
 	      "corticalcolumn": {
 	      	"enableFeedback": false,
 	      	"valueOnly": false,
-	      	"enableSpatialTrick": false,
+	      	"enableSpatialTrick": false
 	      }
 	    }
 	  }
