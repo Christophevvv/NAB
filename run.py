@@ -187,6 +187,8 @@ if __name__ == "__main__":
     from nab.detectors.htmjava.htmjava_detector import HtmjavaDetector
   if "numentaTM" in args.detectors:
     from nab.detectors.numenta.numentaTM_detector import NumentaTMDetector
+  if "feedbackTM" in args.detectors:
+    from nab.detectors.numenta.feedbackTM_detector import FeedbackTMDetector
   if "null" in args.detectors:
     from nab.detectors.null.null_detector import NullDetector
   if "random" in args.detectors:

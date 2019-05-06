@@ -17,7 +17,8 @@
 #
 # http://numenta.org/licenses/
 # ----------------------------------------------------------------------
-
+#This is the original NAB numenta detector for reference. Since the new one is altered to
+#include a model parameter file as input.
 import math
 
 from nupic.algorithms import anomaly_likelihood
@@ -49,7 +50,6 @@ class NumentaDetector(AnomalyDetector):
     super(NumentaDetector, self).__init__(*args, **kwargs)
 
     self.model = None
-    self.modelConfig = None
     self.sensorParams = None
     self.anomalyLikelihood = None
     # Keep track of value range for spatial anomaly detection
@@ -65,7 +65,7 @@ class NumentaDetector(AnomalyDetector):
 
   def getAdditionalHeaders(self):
     """Returns a list of strings."""
-    return ["raw_score","spatial_anomaly"]
+    return ["raw_score"]
 
 
   def handleRecord(self, inputData):
@@ -105,40 +105,27 @@ class NumentaDetector(AnomalyDetector):
     else:
       finalScore = rawScore
 
-#     if spatialAnomaly:
-#       finalScore = 1.0
-    spatial_anomaly = 0
     if spatialAnomaly:
-      spatial_anomaly = 1
+      finalScore = 1.0
 
-    return (finalScore, rawScore, spatial_anomaly)
+    return (finalScore, rawScore)
 
 
   def initialize(self):
+    # Get config params, setting the RDSE resolution
     rangePadding = abs(self.inputMax - self.inputMin) * 0.2
-    if not (self.parameters == None):
-      minVal=self.inputMin-rangePadding
-      maxVal=self.inputMax+rangePadding
-      # Handle the corner case where the incoming min and max are the same
-      if minVal == maxVal:
-        maxVal = minVal + 1  
-      valueEncoder = self.parameters["modelConfig"]["modelParams"]["sensorParams"]["encoders"]["value"]
-      resolution = max(0.001,(maxVal - minVal) / 130)
-      valueEncoder["resolution"] = resolution
-      self.modelConfig = self.parameters["modelConfig"]
-      self.sensorParams = valueEncoder #To check if equal to _setupEncoderParams assignment
-    else:
-      self.modelConfig = getScalarMetricWithTimeOfDayAnomalyParams(
-        metricData=[0],
-        minVal=self.inputMin-rangePadding,
-        maxVal=self.inputMax+rangePadding,
-        minResolution=0.001,
-        tmImplementation = "cpp"
-        )["modelConfig"]
-      self._setupEncoderParams(self.modelConfig["modelParams"]["sensorParams"]["encoders"])
+    modelParams = getScalarMetricWithTimeOfDayAnomalyParams(
+      metricData=[0],
+      minVal=self.inputMin-rangePadding,
+      maxVal=self.inputMax+rangePadding,
+      minResolution=0.001,
+      tmImplementation = "cpp"
+    )["modelConfig"]
 
-    #print self.sensorParams
-    self.model = ModelFactory.create(self.modelConfig)
+    self._setupEncoderParams(
+      modelParams["modelParams"]["sensorParams"]["encoders"])
+
+    self.model = ModelFactory.create(modelParams)
 
     self.model.enableInference({"predictedField": "value"})
 
@@ -162,5 +149,5 @@ class NumentaDetector(AnomalyDetector):
     encoderParams["value"] = encoderParams.pop("c1")
     encoderParams["value"]["fieldname"] = "value"
     encoderParams["value"]["name"] = "value"
- 
+
     self.sensorParams = encoderParams["value"]

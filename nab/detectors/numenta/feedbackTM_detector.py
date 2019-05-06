@@ -1,0 +1,253 @@
+# ----------------------------------------------------------------------
+# Copyright (C) 2014, Numenta, Inc.  Unless you have an agreement
+# with Numenta, Inc., for a separate license for this software code, the
+# following terms and conditions apply:
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero Public License version 3 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU Affero Public License for more details.
+#
+# You should have received a copy of the GNU Affero Public License
+# along with this program.  If not, see http://www.gnu.org/licenses.
+#
+# http://numenta.org/licenses/
+# ----------------------------------------------------------------------
+
+import math
+import numpy as np
+from nupic.algorithms import anomaly_likelihood, anomaly
+from nab.detectors.base import AnomalyDetector
+from nupic.encoders.random_distributed_scalar import RandomDistributedScalarEncoder
+from nupic.encoders.date import DateEncoder
+from corticalcolumn_new import CorticalColumn
+from nupic.bindings.algorithms import TemporalMemory
+
+SPATIAL_TOLERANCE = 0.05
+
+class FeedbackTMDetector(AnomalyDetector):
+  """
+  This detector uses a research version of HTM where apical feedback is added.
+  """
+
+  def __init__(self, *args, **kwargs):
+
+    super(FeedbackTMDetector, self).__init__(*args, **kwargs)
+
+    self.value_encoder = None
+    self.date_encoder = None
+    self.delta_encoder = None
+    self.corticalColumn = None
+    self.anomalyLikelihood = None
+    
+    self.modelConfig = None
+    self.ccConfig = None
+    
+    #numpy arrays that hold value/timestamp
+    self.value = None
+    self.timestamp = None
+    self.delta_value = None
+    # Keep track of value range for spatial anomaly detection
+    self.minVal = None
+    self.maxVal = None
+    
+    self.prevVal = 0
+
+    # Set this to False if you want to get results based on raw scores
+    # without using AnomalyLikelihood. This will give worse results, but
+    # useful for checking the efficacy of AnomalyLikelihood. You will need
+    # to re-optimize the thresholds when running with this setting.
+    self.useLikelihood = False
+    
+    self.tempMem = None
+    
+    #For hierarchy only
+    self.valueCC = None
+    self.deltaCC = None
+    self.anomalyCC = None
+
+
+  def getAdditionalHeaders(self):
+    """Returns a list of strings."""
+    return ["raw_score","spatial_anomaly"]
+
+
+  def handleRecord(self, inputData):
+    """Returns a tuple (anomalyScore, rawScore).
+
+    Internally to NuPIC "anomalyScore" corresponds to "likelihood_score"
+    and "rawScore" corresponds to "anomaly_score". Sorry about that.
+    """
+    # Get the value
+    value = inputData["value"]
+    timestamp = inputData["timestamp"]
+    
+    self.value_encoder.encodeIntoArray(value,self.value)
+    self.date_encoder.encodeIntoArray(timestamp,self.timestamp)
+    self.delta_encoder.encodeIntoArray(abs(self.prevVal-value), self.delta_value)
+    #save value
+    self.prevVal = value
+    
+    #input = np.concatenate((self.timestamp,self.value))
+    if self.ccConfig["valueOnly"]:
+      self.corticalColumn.computeActiveColumns(self.value)#np.concatenate((self.delta_value,self.value)))#self.value)
+    else:
+      self.corticalColumn.computeActiveColumns(np.concatenate((self.timestamp,self.value)))#self.value)
+    self.corticalColumn.compute(self.timestamp)
+    #activeColumns = self.corticalColumn.getBasalOutput().nonzero()[0]
+
+    #predictedCells = self.tempMem.getPredictiveCells()
+    #predictedColumns = np.unique(predictedCells/self.tempMem.getCellsPerColumn())
+    #self.tempMem.compute(activeColumns,True)
+
+    #rawScore = anomaly.computeRawAnomalyScore(activeColumns, predictedColumns)
+    # Retrieve the anomaly score and write it to a file
+    rawScore = self.corticalColumn.computeRawAnomalyScore()
+    #self.corticalColumn.getAnomalyScore()[0] #column score
+    
+    #Hierachy
+    #rawScore = self.computeHierarchy()
+
+    # Update min/max values and check if there is a spatial anomaly
+    spatialAnomaly = False
+    if self.minVal != self.maxVal:
+      tolerance = (self.maxVal - self.minVal) * SPATIAL_TOLERANCE
+      maxExpected = self.maxVal + tolerance
+      minExpected = self.minVal - tolerance
+      if value > maxExpected or value < minExpected:
+        spatialAnomaly = True
+    if self.maxVal is None or value > self.maxVal:
+      self.maxVal = value
+    if self.minVal is None or value < self.minVal:
+      self.minVal = value
+
+    if self.useLikelihood:
+      # Compute log(anomaly likelihood)
+      anomalyScore = self.anomalyLikelihood.anomalyProbability(
+        inputData["value"], rawScore, inputData["timestamp"])
+      logScore = self.anomalyLikelihood.computeLogLikelihood(anomalyScore)
+      finalScore = logScore
+    else:
+      finalScore = rawScore
+
+    if self.ccConfig["enableSpatialTrick"]:
+      if spatialAnomaly:
+        finalScore = 1.0
+    spatial_anomaly = 0
+    if spatialAnomaly:
+      spatial_anomaly = 1
+
+    return (finalScore, rawScore, spatial_anomaly)
+  
+  def computeHierarchy(self):
+    self.valueCC.computeActiveColumns(self.value)
+    self.deltaCC.computeActiveColumns(self.delta_value)
+    
+    self.valueCC.compute(self.deltaCC.getBasalOutput())
+    self.deltaCC.compute(self.valueCC.getBasalOutput())
+    
+    self.anomalyCC.computeActiveColumns(np.concatenate((self.valueCC.getColumnOutput(),
+                                                        self.deltaCC.getColumnOutput())))
+    self.anomalyCC.compute(self.timestamp)
+    
+    return self.anomalyCC.computeRawAnomalyScore()
+
+
+  def initialize(self):
+    assert self.parameters != None, "We need model parameters to perform feedbackTM..."
+    self.modelConfig = self.parameters["modelConfig"]
+    self.ccConfig = self.modelConfig["modelParams"]["corticalcolumn"]
+    encoderSeed = self.modelConfig["modelParams"]["sensorParams"]["encoders"]["value"]["seed"]
+    
+    rangePadding = abs(self.inputMax - self.inputMin) * 0.2
+    minVal=self.inputMin-rangePadding
+    maxVal=self.inputMax+rangePadding
+    resolution = max(0.001,(maxVal - minVal) / 130)
+    self.value_encoder = RandomDistributedScalarEncoder(resolution,
+                                                        w=21,
+                                                        n=400,
+                                                        seed=encoderSeed)
+    self.delta_encoder = RandomDistributedScalarEncoder(resolution,
+                                                        w=21,
+                                                        n=400,
+                                                        seed=encoderSeed)
+    self.date_encoder = DateEncoder(timeOfDay=(21,9.49))
+    self.value = np.zeros(self.value_encoder.getWidth(), dtype='uint32')
+    self.timestamp = np.zeros(self.date_encoder.getWidth(), dtype='uint32')
+    self.delta_value = np.zeros(self.delta_encoder.getWidth(), dtype='uint32')
+    if self.ccConfig["valueOnly"]:
+      width = self.value_encoder.getWidth()# + self.delta_encoder.getWidth()# + self.date_encoder.getWidth()
+    else:
+      width = self.value_encoder.getWidth() + self.date_encoder.getWidth()
+    self.corticalColumn = CorticalColumn(inputWidth = width,
+                                         neighborCount = 1,
+                                         miniColumnCount = 2048,
+                                         potentialRadius = width, #make sure this matches width/2
+                                         cellsPerColumnTM = 32,
+                                         cellsPerColumnCCTM = 32,
+                                         sparsity = 0.02,
+                                         enableLayer4 = True,
+                                         enableFeedback = self.ccConfig["enableFeedback"],
+                                         spSeed = self.modelConfig["modelParams"]["spParams"]["seed"],
+                                         tmSeed = self.modelConfig["modelParams"]["tmParams"]["seed"],
+                                         SPlearning = True,
+                                         verbosity = 0)
+    #self.initializeHierarchy()
+#     self.tempMem = TemporalMemory(columnDimensions=(2048,),
+#                                   cellsPerColumn=32,
+#                                   activationThreshold=13,
+#                                   initialPermanence=0.21,
+#                                   connectedPermanence=0.50,
+#                                   minThreshold=10,
+#                                   maxNewSynapseCount=20,
+#                                   permanenceIncrement=0.10,
+#                                   permanenceDecrement=0.10,
+#                                   predictedSegmentDecrement=0.00,
+#                                   maxSegmentsPerCell=128,
+#                                   maxSynapsesPerSegment=32,
+#                                   seed=1960)
+    
+    if self.useLikelihood:
+      # Initialize the anomaly likelihood object
+      numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
+      self.anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood(
+        learningPeriod=numentaLearningPeriod,
+        estimationSamples=self.probationaryPeriod-numentaLearningPeriod,
+        reestimationPeriod=100
+      )
+      
+  def initializeHierarchy(self):
+    self.valueCC = CorticalColumn(inputWidth = self.value_encoder.getWidth(),
+                                  neighborCount = 1,
+                                  miniColumnCount = 2048,
+                                  potentialRadius = 200,
+                                  cellsPerColumnTM = 32,
+                                  cellsPerColumnCCTM = 64,
+                                  sparsity = 0.02,
+                                  enableLayer4 = True,
+                                  SPlearning = True,
+                                  verbosity = 0)
+    self.deltaCC = CorticalColumn(inputWidth = self.delta_encoder.getWidth(),
+                                  neighborCount = 1,
+                                  miniColumnCount = 2048,
+                                  potentialRadius = 200,
+                                  cellsPerColumnTM = 32,
+                                  cellsPerColumnCCTM = 64,
+                                  sparsity = 0.02,
+                                  enableLayer4 = True,
+                                  SPlearning = True,
+                                  verbosity = 0)
+    self.anomalyCC = CorticalColumn(inputWidth = 2048*64*2, #make sure this matches outputs
+                                    neighborCount = 1,
+                                    miniColumnCount = 2048,
+                                    potentialRadius = 135000,
+                                    cellsPerColumnTM = 32,
+                                    cellsPerColumnCCTM = 64,
+                                    sparsity = 0.02,
+                                    enableLayer4 = True,
+                                    SPlearning = True,
+                                    verbosity = 0)
