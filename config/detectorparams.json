@@ -97,6 +97,11 @@
 	        "anomalyCacheRecords": null,
 	        "autoDetectThreshold": null,
 	        "autoDetectWaitRecords": 5030
+	      },
+	      "corticalcolumn": {
+	      	"enableFeedback": false,
+	      	"valueOnly": false,
+	      	"enableSpatialTrick": false,
 	      }
 	    }
 	  }
