@@ -198,6 +198,9 @@ class FeedbackTMDetector(AnomalyDetector):
                                          l3SampleSize=self.ccConfig["l3SampleSize"],
                                          l3ActivationThresholdPct=self.ccConfig["l3ActivationThresholdPct"],
                                          l3MinThresholdPct=self.ccConfig["l3MinThresholdPct"],
+                                         useApicalModulationBasalThreshold=True,
+                                         useApicalTiebreak=False,
+                                         reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                          verbosity = 0)
     #self.initializeHierarchy()
 #     self.tempMem = TemporalMemory(columnDimensions=(2048,),

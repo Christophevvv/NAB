@@ -24,6 +24,9 @@ class CorticalColumn():
                  l3SampleSize=21,
                  l3ActivationThresholdPct=1,
                  l3MinThresholdPct=1,
+                 useApicalModulationBasalThreshold=True,
+                 useApicalTiebreak=False,
+                 reducedBasalPct=0.8,
                  verbosity=0):
         self.enableLayer4 = enableLayer4
         self.enableFeedback = enableFeedback
@@ -58,6 +61,9 @@ class CorticalColumn():
                                  miniColumnCount=miniColumnCount,
                                  cellsPerColumn=cellsPerColumnTM,
                                  sparsity=sparsity,
+                                 useApicalModulationBasalThreshold=useApicalModulationBasalThreshold,
+                                 useApicalTiebreak=useApicalTiebreak,
+                                 reducedBasalPct=reducedBasalPct,
                                  seed=tmSeed,
                                  verbosity=verbosity)
         self.layer3 = Layer3(neighborCount=neighborCount,
@@ -238,6 +244,9 @@ class Layer4():
                  miniColumnCount=128,
                  cellsPerColumn=32,
                  sparsity=0.02,
+                 useApicalModulationBasalThreshold=True,
+                 useApicalTiebreak=False,
+                 reducedBasalPct=0.8,                
                  seed=42,
                  verbosity=0):
         self.verbosity = verbosity
@@ -248,7 +257,7 @@ class Layer4():
                                                apicalInputSize=apicalWidth,
                                                cellsPerColumn=cellsPerColumn,
                                                activationThreshold=13,#floor(0.325*self.sampleSize),#3,
-                                               reducedBasalThreshold=10,#floor(0.28*self.sampleSize),#13,
+                                               reducedBasalThreshold=floor(reducedBasalPct*13.0),#floor(0.28*self.sampleSize),#13,
                                                initialPermanence=0.21,#0.21
                                                connectedPermanence=0.50,
                                                minThreshold=10,#floor(0.25*self.sampleSize),#10,
@@ -258,6 +267,8 @@ class Layer4():
                                                basalPredictedSegmentDecrement=0.0005,
                                                apicalPredictedSegmentDecrement=0.0005,
                                                maxSynapsesPerSegment=-1,
+                                               useApicalModulationBasalThreshold=useApicalModulationBasalThreshold,
+                                               useApicalTiebreak=useApicalTiebreak,
                                                seed=seed)
 
 

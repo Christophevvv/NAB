@@ -104,7 +104,10 @@
 	      	"enableSpatialTrick": false,
 	      	"l3SampleSize": 21,
 	      	"l3ActivationThresholdPct": 1,
-          "l3MinThresholdPct": 1
+          "l3MinThresholdPct": 1,
+          "ApicalModulation": true,
+          "ApicalTiebreak": false,
+          "reducedBasalPct": 0.8
 	      }
 	    }
 	  }
