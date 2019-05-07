@@ -101,7 +101,10 @@
 	      "corticalcolumn": {
 	      	"enableFeedback": false,
 	      	"valueOnly": false,
-	      	"enableSpatialTrick": false
+	      	"enableSpatialTrick": false,
+	      	"l3SampleSize": 21,
+	      	"l3ActivationThresholdPct": 1,
+          "l3MinThresholdPct": 1
 	      }
 	    }
 	  }

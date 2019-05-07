@@ -21,6 +21,9 @@ class CorticalColumn():
                  spSeed = 42,
                  tmSeed = 42,
                  SPlearning=True,
+                 l3SampleSize=21,
+                 l3ActivationThresholdPct=1,
+                 l3MinThresholdPct=1,
                  verbosity=0):
         self.enableLayer4 = enableLayer4
         self.enableFeedback = enableFeedback
@@ -64,6 +67,9 @@ class CorticalColumn():
                              cellsPerColumn=cellsPerColumnCCTM,
                              sparsity=sparsity,
                              seed=tmSeed,
+                             sampleSize=l3SampleSize,
+                             activationThresholdPct=l3ActivationThresholdPct,
+                             minThresholdPct=l3MinThresholdPct,
                              verbosity=verbosity)
                              
                              
@@ -166,17 +172,20 @@ class Layer3():
                  miniColumnCount=128,
                  cellsPerColumn=128,#Increase number of possible contexts here
                  sparsity=0.02,
+                 sampleSize=2, #floor(miniColumnCount*sparsity)
+                 activationThresholdPct=1,
+                 minThresholdPct=1,
                  seed=42,
                  verbosity=0):
         #SampelSize per neighboring column (number of active cells expected (only one per column?)
-        self.ss = 21#floor(miniColumnCount*sparsity)
+        self.ss = sampleSize#floor(miniColumnCount*sparsity)
         #Pair memory so that basal Input is from the same timestep as proximal input
         self.crossColumnTM = ApicalTiebreakPairMemory(columnCount=miniColumnCount,
                                                       basalInputSize=basalWidth,
                                                       apicalInputSize=apicalWidth,
                                                       cellsPerColumn=cellsPerColumn,
-                                                      activationThreshold=floor(1*neighborCount*self.ss),
-                                                      minThreshold=floor(1*neighborCount*self.ss),
+                                                      activationThreshold=floor(activationThresholdPct*neighborCount*self.ss),
+                                                      minThreshold=floor(minThresholdPct*neighborCount*self.ss),
                                                       sampleSize=floor(1*neighborCount*self.ss),
                                                       basalPredictedSegmentDecrement=0.005,
                                                       seed=seed)

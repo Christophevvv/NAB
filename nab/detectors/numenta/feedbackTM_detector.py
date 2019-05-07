@@ -195,6 +195,9 @@ class FeedbackTMDetector(AnomalyDetector):
                                          spSeed = self.modelConfig["modelParams"]["spParams"]["seed"],
                                          tmSeed = self.modelConfig["modelParams"]["tmParams"]["seed"],
                                          SPlearning = True,
+                                         l3SampleSize=self.ccConfig["l3SampleSize"],
+                                         l3ActivationThresholdPct=self.ccConfig["l3ActivationThresholdPct"],
+                                         l3MinThresholdPct=self.ccConfig["l3MinThresholdPct"],
                                          verbosity = 0)
     #self.initializeHierarchy()
 #     self.tempMem = TemporalMemory(columnDimensions=(2048,),
