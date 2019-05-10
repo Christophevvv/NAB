@@ -100,6 +100,7 @@
 	      },
 	      "corticalcolumn": {
 	      	"enableFeedback": false,
+	      	"burstFeedback": false,
 	      	"valueOnly": false,
 	      	"enableSpatialTrick": false,
 	      	"l3SampleSize": 21,

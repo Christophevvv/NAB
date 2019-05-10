@@ -192,6 +192,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          sparsity = 0.02,
                                          enableLayer4 = True,
                                          enableFeedback = self.ccConfig["enableFeedback"],
+                                         burstFeedback = self.ccConfig["burstFeedback"],
                                          spSeed = self.modelConfig["modelParams"]["spParams"]["seed"],
                                          tmSeed = self.modelConfig["modelParams"]["tmParams"]["seed"],
                                          SPlearning = True,

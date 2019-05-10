@@ -18,6 +18,7 @@ class CorticalColumn():
                  sparsity=0.02,
                  enableLayer4=True,
                  enableFeedback=True,
+                 burstFeedback=False,
                  spSeed = 42,
                  tmSeed = 42,
                  SPlearning=True,
@@ -30,6 +31,7 @@ class CorticalColumn():
                  verbosity=0):
         self.enableLayer4 = enableLayer4
         self.enableFeedback = enableFeedback
+        self.burstFeedback = burstFeedback
         self.SPlearning = SPlearning
         self.verbosity = verbosity
         self.spOutput = np.zeros(miniColumnCount, dtype="uint32")
@@ -109,7 +111,11 @@ class CorticalColumn():
         #layer3 active cells always unique per column?
         if self.enableLayer4:
             if self.enableFeedback:
-              self.layer4.compute(self.activeColumns,self.layer3.getWinnerCells())
+              if self.burstFeedback:
+                self.layer4.compute(self.activeColumns,self.layer3.getActiveCells(),
+                                    self.layer3.getWinnerCells())
+              else:
+                self.layer4.compute(self.activeColumns,self.layer3.getWinnerCells())
             else:
               self.layer4.compute(self.activeColumns)
 
@@ -272,13 +278,14 @@ class Layer4():
                                                seed=seed)
 
 
-    def compute(self,activeColumns,feedback=()):
+    def compute(self,activeColumns,feedback=(),feedbackGrowthCandidates=None):
         ''' 
         Perform layer 4 computation given feedforward input (the active columns)
         and apical feedback 
         '''
         self.TM.compute2(activeColumns=activeColumns,
-                         apicalInput=feedback)
+                         apicalInput=feedback,
+                         apicalGrowthCandidates=feedbackGrowthCandidates)
 
     def getAnomalyScore(self):
         '''
