@@ -2,7 +2,7 @@ import numpy as np
 #from nupic.algorithms.spatial_pooler import SpatialPooler
 #CPP spatial pooler:
 from nupic.bindings.algorithms import SpatialPooler
-from htmresearch.algorithms.apical_tiebreak_temporal_memory import ApicalTiebreakPairMemory,ApicalTiebreakSequenceMemory,CrossColumnApicalTiebreakSequenceMemory
+from apical_tiebreak_temporal_memory import ApicalTiebreakPairMemory,ApicalTiebreakSequenceMemory,CrossColumnApicalTiebreakSequenceMemory
 #from htmresearch.algorithms.output_layer import OutputLayer
 from math import floor
 from nupic.algorithms import anomaly
