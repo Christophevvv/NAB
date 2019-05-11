@@ -69,6 +69,8 @@ class FeedbackTMDetector(AnomalyDetector):
     self.valueCC = None
     self.deltaCC = None
     self.anomalyCC = None
+    
+    self.timeCC = None
 
 
   def getAdditionalHeaders(self):
@@ -97,7 +99,19 @@ class FeedbackTMDetector(AnomalyDetector):
       self.corticalColumn.computeActiveColumns(self.value)#np.concatenate((self.delta_value,self.value)))#self.value)
     else:
       self.corticalColumn.computeActiveColumns(np.concatenate((self.timestamp,self.value)))#self.value)
-    self.corticalColumn.compute(self.timestamp)
+    if self.ccConfig["timeAndDeltaFeedback"]:
+      if self.ccConfig["ccContext"]:
+        self.timeCC.computeActiveColumns(self.timestamp)
+        self.deltaCC.computeActiveColumns(self.delta_value)
+        self.corticalColumn.compute(np.concatenate((self.timeCC.getBasalOutput(),
+                                                    self.deltaCC.getBasalOutpu())))
+      else:
+        self.corticalColumn.compute(np.concatenate((self.timestamp,self.delta_value))) #
+    else:
+      if self.ccConfig["ccContext"]:
+        self.corticalColumn.compute(self.timeCC.getBasalOutput())
+      else:
+        self.corticalColumn.compute(self.timestamp)
     #activeColumns = self.corticalColumn.getBasalOutput().nonzero()[0]
 
     #predictedCells = self.tempMem.getPredictiveCells()
@@ -183,6 +197,14 @@ class FeedbackTMDetector(AnomalyDetector):
       width = self.value_encoder.getWidth()# + self.delta_encoder.getWidth()# + self.date_encoder.getWidth()
     else:
       width = self.value_encoder.getWidth() + self.date_encoder.getWidth()
+    if self.ccConfig["timeAndDeltaFeedback"]:
+      basalWidth = self.delta_encoder.getWidth() + self.date_encoder.getWidth()
+      if self.ccConfig["ccContext"]:
+        basalWidth = 2048*2
+    else:
+      basalWidth = self.date_encoder.getWidth()
+      if self.ccConfig["ccContext"]:
+        basalWidth = 2048
     self.corticalColumn = CorticalColumn(inputWidth = width,
                                          neighborCount = 1,
                                          miniColumnCount = 2048,
@@ -196,6 +218,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          spSeed = self.modelConfig["modelParams"]["spParams"]["seed"],
                                          tmSeed = self.modelConfig["modelParams"]["tmParams"]["seed"],
                                          SPlearning = True,
+                                         basalWidth = basalWidth,
                                          l3SampleSize=self.ccConfig["l3SampleSize"],
                                          l3ActivationThresholdPct=self.ccConfig["l3ActivationThresholdPct"],
                                          l3MinThresholdPct=self.ccConfig["l3MinThresholdPct"],
@@ -203,6 +226,27 @@ class FeedbackTMDetector(AnomalyDetector):
                                          useApicalTiebreak=self.ccConfig["ApicalTiebreak"],
                                          reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                          verbosity = 0)
+    #in fact we only use spatial pooler of these CC's
+    self.deltaCC = CorticalColumn(inputWidth = self.delta_encoder.getWidth(),
+                                  neighborCount = 1,
+                                  miniColumnCount = 2048,
+                                  potentialRadius = 200,
+                                  cellsPerColumnTM = 32,
+                                  cellsPerColumnCCTM = 32,
+                                  sparsity = 0.02,
+                                  enableLayer4 = False,
+                                  SPlearning = True,
+                                  verbosity = 0)
+    self.timeCC = CorticalColumn(inputWidth = self.date_encoder.getWidth(),
+                                  neighborCount = 1,
+                                  miniColumnCount = 2048,
+                                  potentialRadius = 54,
+                                  cellsPerColumnTM = 32,
+                                  cellsPerColumnCCTM = 32,
+                                  sparsity = 0.02,
+                                  enableLayer4 = False,
+                                  SPlearning = True,
+                                  verbosity = 0)
     #self.initializeHierarchy()
 #     self.tempMem = TemporalMemory(columnDimensions=(2048,),
 #                                   cellsPerColumn=32,
@@ -236,7 +280,17 @@ class FeedbackTMDetector(AnomalyDetector):
                                   cellsPerColumnCCTM = 64,
                                   sparsity = 0.02,
                                   enableLayer4 = True,
+                                  enableFeedback = self.ccConfig["enableFeedback"],
+                                  burstFeedback = self.ccConfig["burstFeedback"],
+                                  spSeed = self.modelConfig["modelParams"]["spParams"]["seed"],
+                                  tmSeed = self.modelConfig["modelParams"]["tmParams"]["seed"],
                                   SPlearning = True,
+                                  l3SampleSize=self.ccConfig["l3SampleSize"],
+                                  l3ActivationThresholdPct=self.ccConfig["l3ActivationThresholdPct"],
+                                  l3MinThresholdPct=self.ccConfig["l3MinThresholdPct"],
+                                  useApicalModulationBasalThreshold=self.ccConfig["ApicalModulation"],
+                                  useApicalTiebreak=self.ccConfig["ApicalTiebreak"],
+                                  reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                   verbosity = 0)
     self.deltaCC = CorticalColumn(inputWidth = self.delta_encoder.getWidth(),
                                   neighborCount = 1,

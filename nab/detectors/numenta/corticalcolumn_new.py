@@ -22,6 +22,7 @@ class CorticalColumn():
                  spSeed = 42,
                  tmSeed = 42,
                  SPlearning=True,
+                 basalWidth = 54,
                  l3SampleSize=21,
                  l3ActivationThresholdPct=1,
                  l3MinThresholdPct=1,
@@ -69,7 +70,7 @@ class CorticalColumn():
                                  seed=tmSeed,
                                  verbosity=verbosity)
         self.layer3 = Layer3(neighborCount=neighborCount,
-                             basalWidth=54,#neighborCount*miniColumnCount,
+                             basalWidth=basalWidth,#neighborCount*miniColumnCount,
                              apicalWidth=0, #No hierarchy yet
                              miniColumnCount=miniColumnCount,
                              cellsPerColumn=cellsPerColumnCCTM,
