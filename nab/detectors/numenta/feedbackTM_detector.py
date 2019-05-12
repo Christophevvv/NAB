@@ -105,7 +105,7 @@ class FeedbackTMDetector(AnomalyDetector):
         self.timeCC.computeActiveColumns(self.timestamp)
         self.deltaCC.computeActiveColumns(self.delta_value)
         self.corticalColumn.compute(np.concatenate((self.timeCC.getBasalOutput(),
-                                                    self.deltaCC.getBasalOutpu())).nonzero()[0])
+                                                    self.deltaCC.getBasalOutput())).nonzero()[0])
       else:
         self.corticalColumn.compute(np.concatenate((self.timestamp,self.delta_value)).nonzero()[0]) #
     else:
