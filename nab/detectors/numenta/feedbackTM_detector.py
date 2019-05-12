@@ -26,6 +26,7 @@ from nupic.encoders.random_distributed_scalar import RandomDistributedScalarEnco
 from nupic.encoders.date import DateEncoder
 from corticalcolumn_new import CorticalColumn
 from nupic.bindings.algorithms import TemporalMemory
+import cv2
 
 SPATIAL_TOLERANCE = 0.05
 
@@ -104,16 +105,18 @@ class FeedbackTMDetector(AnomalyDetector):
         self.timeCC.computeActiveColumns(self.timestamp)
         self.deltaCC.computeActiveColumns(self.delta_value)
         self.corticalColumn.compute(np.concatenate((self.timeCC.getBasalOutput(),
-                                                    self.deltaCC.getBasalOutpu())))
+                                                    self.deltaCC.getBasalOutpu())).nonzero()[0])
       else:
-        self.corticalColumn.compute(np.concatenate((self.timestamp,self.delta_value))) #
+        self.corticalColumn.compute(np.concatenate((self.timestamp,self.delta_value)).nonzero()[0]) #
     else:
       if self.ccConfig["ccContext"]:
-        self.corticalColumn.compute(self.timeCC.getBasalOutput())
+        self.corticalColumn.compute(self.timeCC.getBasalOutput().nonzero()[0])
       else:
-        self.corticalColumn.compute(self.timestamp)
+        self.corticalColumn.compute(self.timestamp.nonzero()[0])
     #activeColumns = self.corticalColumn.getBasalOutput().nonzero()[0]
 
+
+    #self.visualizeCC()
     #predictedCells = self.tempMem.getPredictiveCells()
     #predictedColumns = np.unique(predictedCells/self.tempMem.getCellsPerColumn())
     #self.tempMem.compute(activeColumns,True)
@@ -121,6 +124,13 @@ class FeedbackTMDetector(AnomalyDetector):
     #rawScore = anomaly.computeRawAnomalyScore(activeColumns, predictedColumns)
     # Retrieve the anomaly score and write it to a file
     rawScore = self.corticalColumn.computeRawAnomalyScore()
+#     if timestamp.day > 8:
+#       print rawScore
+#       self.visualizeCC()
+#     if timestamp.hour == 9 and timestamp.minute == 0:
+#       #print self.timestamp.nonzero()[0]
+#       #self.visualizeCC()
+#       print rawScore
     #self.corticalColumn.getAnomalyScore()[0] #column score
     
     #Hierachy
@@ -157,6 +167,11 @@ class FeedbackTMDetector(AnomalyDetector):
 
     return (finalScore, rawScore, spatial_anomaly)
   
+  def visualizeCC(self):
+    cv2.imshow('frame',self.corticalColumn.visualize())
+    if cv2.waitKey(0) & 0xFF== ord('q'):
+      return
+  
   def computeHierarchy(self):
     self.valueCC.computeActiveColumns(self.value)
     self.deltaCC.computeActiveColumns(self.delta_value)
@@ -176,6 +191,7 @@ class FeedbackTMDetector(AnomalyDetector):
     self.modelConfig = self.parameters["modelConfig"]
     self.ccConfig = self.modelConfig["modelParams"]["corticalcolumn"]
     encoderSeed = self.modelConfig["modelParams"]["sensorParams"]["encoders"]["value"]["seed"]
+    timeOfDay = self.modelConfig["modelParams"]["sensorParams"]["encoders"]["timestamp_timeOfDay"]["timeOfDay"]
     
     rangePadding = abs(self.inputMax - self.inputMin) * 0.2
     minVal=self.inputMin-rangePadding
@@ -189,7 +205,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                                         w=21,
                                                         n=400,
                                                         seed=encoderSeed)
-    self.date_encoder = DateEncoder(timeOfDay=(21,9.49))
+    self.date_encoder = DateEncoder(timeOfDay=(timeOfDay[0],timeOfDay[1])) #9.49
     self.value = np.zeros(self.value_encoder.getWidth(), dtype='uint32')
     self.timestamp = np.zeros(self.date_encoder.getWidth(), dtype='uint32')
     self.delta_value = np.zeros(self.delta_encoder.getWidth(), dtype='uint32')
@@ -224,6 +240,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          l3MinThresholdPct=self.ccConfig["l3MinThresholdPct"],
                                          useApicalModulationBasalThreshold=self.ccConfig["ApicalModulation"],
                                          useApicalTiebreak=self.ccConfig["ApicalTiebreak"],
+                                         useIndependentApical=self.ccConfig["IndependentApical"],
                                          reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                          verbosity = 0)
     #in fact we only use spatial pooler of these CC's

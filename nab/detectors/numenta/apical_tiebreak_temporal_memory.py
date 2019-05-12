@@ -70,6 +70,7 @@ class ApicalTiebreakTemporalMemory(object):
                maxSynapsesPerSegment=-1,
                useApicalModulationBasalThreshold=True,
                useApicalTiebreak=False,
+               useIndependentApical=False,
                seed=42,
                verbosity=0):
     """
@@ -162,11 +163,14 @@ class ApicalTiebreakTemporalMemory(object):
 
     self.useApicalTiebreak=useApicalTiebreak
     self.useApicalModulationBasalThreshold=useApicalModulationBasalThreshold
+    self.useIndependentApical = useIndependentApical
     if self.verbosity > 0:
       print "apicalTiebreak:"
       print self.useApicalTiebreak
       print"apicalModulation:"
       print self.useApicalModulationBasalThreshold
+      print "independentApical"
+      print self.useIndependentApical
 
 
   def reset(self):
@@ -697,13 +701,18 @@ class ApicalTiebreakTemporalMemory(object):
 
     @return (numpy array)
     """
-
     cellsForBasalSegments = self.basalConnections.mapSegmentsToCells(
       activeBasalSegments)
-    if self.useApicalTiebreak == False:
-      return np.unique(np.sort(cellsForBasalSegments))
+    
     cellsForApicalSegments = self.apicalConnections.mapSegmentsToCells(
       activeApicalSegments)
+    #print "apical activated cells:"
+    #print cellsForApicalSegments
+    if self.useIndependentApical == True:
+      return np.unique(np.concatenate((cellsForBasalSegments,cellsForApicalSegments)))
+        
+    if self.useApicalTiebreak == False:
+      return np.unique(np.sort(cellsForBasalSegments))
 
     fullyDepolarizedCells = np.intersect1d(cellsForBasalSegments,
                                            cellsForApicalSegments)
@@ -1264,7 +1273,8 @@ class ApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
                apicalPredictedSegmentDecrement=0.0,
                maxSynapsesPerSegment=-1,
                useApicalModulationBasalThreshold=True,
-               useApicalTiebreak=False,               
+               useApicalTiebreak=False, 
+               useIndependentApical=False,              
                seed=42):
     params = {
       "columnCount": columnCount,
@@ -1283,7 +1293,8 @@ class ApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
       "apicalPredictedSegmentDecrement": apicalPredictedSegmentDecrement,
       "maxSynapsesPerSegment": maxSynapsesPerSegment,
       "useApicalModulationBasalThreshold": useApicalModulationBasalThreshold,
-      "useApicalTiebreak": useApicalTiebreak,      
+      "useApicalTiebreak": useApicalTiebreak,
+      "useIndependentApical": useIndependentApical,      
       "seed": seed,
     }
 
@@ -1442,7 +1453,8 @@ class CrossColumnApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
                apicalPredictedSegmentDecrement=0.0,
                maxSynapsesPerSegment=-1,
                useApicalModulationBasalThreshold=True,
-               useApicalTiebreak=False,               
+               useApicalTiebreak=False,  
+               useIndependentApical=False,             
                seed=42):
     params = {
       "columnCount": columnCount,
@@ -1461,7 +1473,8 @@ class CrossColumnApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
       "apicalPredictedSegmentDecrement": apicalPredictedSegmentDecrement,
       "maxSynapsesPerSegment": maxSynapsesPerSegment,
       "useApicalModulationBasalThreshold": useApicalModulationBasalThreshold,
-      "useApicalTiebreak": useApicalTiebreak,       
+      "useApicalTiebreak": useApicalTiebreak,
+      "useIndependentApical": useIndependentApical,       
       "seed": seed,
     }
 

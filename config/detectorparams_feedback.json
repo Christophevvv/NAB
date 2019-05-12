@@ -110,6 +110,7 @@
 					"l3MinThresholdPct": 1,
 					"ApicalModulation": true,
 					"ApicalTiebreak": false,
+					"IndependentApical": false,
 					"reducedBasalPct": 0.8
 	      }
 	    }
