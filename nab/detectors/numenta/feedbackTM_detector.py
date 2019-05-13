@@ -241,6 +241,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          useApicalModulationBasalThreshold=self.ccConfig["ApicalModulation"],
                                          useApicalTiebreak=self.ccConfig["ApicalTiebreak"],
                                          useIndependentApical=self.ccConfig["IndependentApical"],
+                                         useApicalMatch=self.ccConfig["ApicalMatch"],
                                          reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                          verbosity = 0)
     #in fact we only use spatial pooler of these CC's

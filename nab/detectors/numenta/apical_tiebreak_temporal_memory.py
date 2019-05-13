@@ -71,6 +71,7 @@ class ApicalTiebreakTemporalMemory(object):
                useApicalModulationBasalThreshold=True,
                useApicalTiebreak=False,
                useIndependentApical=False,
+               useApicalMatch=True,
                seed=42,
                verbosity=0):
     """
@@ -164,6 +165,7 @@ class ApicalTiebreakTemporalMemory(object):
     self.useApicalTiebreak=useApicalTiebreak
     self.useApicalModulationBasalThreshold=useApicalModulationBasalThreshold
     self.useIndependentApical = useIndependentApical
+    self.useApicalMatch = useApicalMatch
     if self.verbosity > 0:
       print "apicalTiebreak:"
       print self.useApicalTiebreak
@@ -469,35 +471,43 @@ class ApicalTiebreakTemporalMemory(object):
     learningMatchingBasalSegments = self._chooseBestSegmentPerColumn(
       self.basalConnections, matchingCellsInBurstingColumns,
       matchingBasalSegments, basalPotentialOverlaps, self.cellsPerColumn)
-    #In case we have a bursting column with no match, see if apical is matching:
-    cellsForMatchingApical = self.apicalConnections.mapSegmentsToCells(matchingApicalSegments)
-    cellsForMatchingApical = np.unique(cellsForMatchingApical)
-    if self.verbosity > 0:
-      print "cellsForMatchingApical" + str(cellsForMatchingApical)
-    (matchingApicalCellsInBurstingColumns,
-     burstingColumnsWithNoApicalMatch) = np2.setCompare(
-       cellsForMatchingApical, burstingColumns, cellsForMatchingApical / self.cellsPerColumn,
-       rightMinusLeft=True)
-    (matchingApicalCellsInColumnsWithNoMatch,
-     burstingColumnsWithNoMatch) = np2.setCompare(
-       cellsForMatchingApical,burstingColumnsWithNoMatch,
-       cellsForMatchingApical /self.cellsPerColumn,
-       rightMinusLeft=True)
-    #columns with no basal nor apical matching cells
-    burstingColumnsWithNoMatch = np.intersect1d(burstingColumnsWithNoMatch,
-                                                burstingColumnsWithNoApicalMatch)
-    #End of my contribution
+    
+    apicalMatchBasalSegmentsCells = None
+    if self.useApicalMatch:
+      #In case we have a bursting column with no match, see if apical is matching:
+      cellsForMatchingApical = self.apicalConnections.mapSegmentsToCells(matchingApicalSegments)
+      cellsForMatchingApical = np.unique(cellsForMatchingApical)
+      if self.verbosity > 0:
+        print "cellsForMatchingApical" + str(cellsForMatchingApical)
+      (matchingApicalCellsInBurstingColumns,
+       burstingColumnsWithNoApicalMatch) = np2.setCompare(
+         cellsForMatchingApical, burstingColumns, cellsForMatchingApical / self.cellsPerColumn,
+         rightMinusLeft=True)
+      (matchingApicalCellsInColumnsWithNoMatch,
+       burstingColumnsWithNoMatch) = np2.setCompare(
+         cellsForMatchingApical,burstingColumnsWithNoMatch,
+         cellsForMatchingApical /self.cellsPerColumn,
+         rightMinusLeft=True)
+      #columns with no basal nor apical matching cells
+      burstingColumnsWithNoMatch = np.intersect1d(burstingColumnsWithNoMatch,
+                                                  burstingColumnsWithNoApicalMatch)
+      #And now add the cells that had no basal match, but did have an apical match. Grow
+      #new segments on these cells
+      bestMatchingApicalCellsInColumnsWithNoMatch = self._chooseBestSegmentPerColumn(
+        self.apicalConnections,matchingApicalCellsInColumnsWithNoMatch,
+        matchingApicalSegments, apicalPotentialOverlaps, self.cellsPerColumn)      
+      #End of my contribution
+      apicalMatchBasalSegmentsCells = self.apicalConnections.mapSegmentsToCells(bestMatchingApicalCellsInColumnsWithNoMatch)
+    
+    #normal basal segment cells
     newBasalSegmentCells = self._getCellsWithFewestSegments(
       self.basalConnections, self.rng, burstingColumnsWithNoMatch,
       self.cellsPerColumn)
     
-    #And now add the cells that had no basal match, but did have an apical match. Grow
-    #new segments on these cells
-    bestMatchingApicalCellsInColumnsWithNoMatch = self._chooseBestSegmentPerColumn(
-      self.apicalConnections,matchingApicalCellsInColumnsWithNoMatch,
-      matchingApicalSegments, apicalPotentialOverlaps, self.cellsPerColumn)
-    newBasalSegmentCells = np.concatenate((newBasalSegmentCells,
-                                           self.apicalConnections.mapSegmentsToCells(bestMatchingApicalCellsInColumnsWithNoMatch)))
+    #if using apical match add the cells we selected because they had an apical match (without basal match)
+    if self.useApicalMatch:
+      newBasalSegmentCells = np.concatenate((newBasalSegmentCells,
+                                             apicalMatchBasalSegmentsCells))
     if self.verbosity > 0:
       print "newBasalSegmentCells" + str(newBasalSegmentCells)
 
@@ -1274,7 +1284,8 @@ class ApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
                maxSynapsesPerSegment=-1,
                useApicalModulationBasalThreshold=True,
                useApicalTiebreak=False, 
-               useIndependentApical=False,              
+               useIndependentApical=False,
+               useApicalMatch=True,             
                seed=42):
     params = {
       "columnCount": columnCount,
@@ -1294,7 +1305,8 @@ class ApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
       "maxSynapsesPerSegment": maxSynapsesPerSegment,
       "useApicalModulationBasalThreshold": useApicalModulationBasalThreshold,
       "useApicalTiebreak": useApicalTiebreak,
-      "useIndependentApical": useIndependentApical,      
+      "useIndependentApical": useIndependentApical,
+      "useApicalMatch": useApicalMatch,     
       "seed": seed,
     }
 
@@ -1454,7 +1466,8 @@ class CrossColumnApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
                maxSynapsesPerSegment=-1,
                useApicalModulationBasalThreshold=True,
                useApicalTiebreak=False,  
-               useIndependentApical=False,             
+               useIndependentApical=False,
+               useApicalMatch=True,            
                seed=42):
     params = {
       "columnCount": columnCount,
@@ -1474,7 +1487,8 @@ class CrossColumnApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
       "maxSynapsesPerSegment": maxSynapsesPerSegment,
       "useApicalModulationBasalThreshold": useApicalModulationBasalThreshold,
       "useApicalTiebreak": useApicalTiebreak,
-      "useIndependentApical": useIndependentApical,       
+      "useIndependentApical": useIndependentApical,
+      "useApicalMatch": useApicalMatch,       
       "seed": seed,
     }
 

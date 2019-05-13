@@ -29,6 +29,7 @@ class CorticalColumn():
                  useApicalModulationBasalThreshold=True,
                  useApicalTiebreak=False,
                  useIndependentApical=False,
+                 useApicalMatch=True,
                  reducedBasalPct=0.8,
                  verbosity=0):
         self.enableLayer4 = enableLayer4
@@ -68,6 +69,7 @@ class CorticalColumn():
                                  useApicalModulationBasalThreshold=useApicalModulationBasalThreshold,
                                  useApicalTiebreak=useApicalTiebreak,
                                  useIndependentApical=useIndependentApical,
+                                 useApicalMatch=useApicalMatch,
                                  reducedBasalPct=reducedBasalPct,
                                  seed=tmSeed,
                                  verbosity=verbosity)
@@ -256,6 +258,7 @@ class Layer4():
                  useApicalModulationBasalThreshold=True,
                  useApicalTiebreak=False,
                  useIndependentApical=False,
+                 useApicalMatch=True,
                  reducedBasalPct=0.8,                
                  seed=42,
                  verbosity=0):
@@ -280,6 +283,7 @@ class Layer4():
                                                useApicalModulationBasalThreshold=useApicalModulationBasalThreshold,
                                                useApicalTiebreak=useApicalTiebreak,
                                                useIndependentApical=useIndependentApical,
+                                               useApicalMatch=useApicalMatch,
                                                seed=seed)
 
 
