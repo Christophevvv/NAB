@@ -102,6 +102,7 @@
 	      	"enableFeedback": false,
 	      	"burstFeedback": false,
 	      	"delayedFeedback": false,
+	      	"smartResolution": false,
 	      	"valueOnly": false,
 	      	"ccContext": false,
 	      	"enableSpatialTrick": false,

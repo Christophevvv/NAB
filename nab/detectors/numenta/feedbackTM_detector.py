@@ -129,7 +129,7 @@ class FeedbackTMDetector(AnomalyDetector):
     # Retrieve the anomaly score and write it to a file
     rawScore = self.corticalColumn.computeRawAnomalyScore()
     #rawScoreDelta = self.deltaCC2.computeRawAnomalyScore()
-#     if timestamp.day > 8:
+#     if timestamp.day > 26:
 #       #print rawScore
 #       print value
 #       self.visualizeCC()
@@ -203,7 +203,13 @@ class FeedbackTMDetector(AnomalyDetector):
     rangePadding = abs(self.inputMax - self.inputMin) * 0.2
     minVal=self.inputMin-rangePadding
     maxVal=self.inputMax+rangePadding
-    resolution = max(0.001,(maxVal - minVal) / 130)
+    #print ((maxVal - minVal) /130)
+    if self.ccConfig["smartResolution"]:
+      resolution = max(0.001,(self.maxValue - self.minValue) / 130.0)#max(0.001,(maxVal - minVal) / 130)
+    else:
+      resolution = max(0.001,(maxVal - minVal) / 130)
+    print "resolution:"
+    print resolution
     self.value_encoder = RandomDistributedScalarEncoder(resolution,
                                                         w=21,
                                                         n=400,
@@ -233,7 +239,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          miniColumnCount = 2048,
                                          potentialRadius = width, #make sure this matches width/2
                                          cellsPerColumnTM = 32,
-                                         cellsPerColumnCCTM = 32,
+                                         cellsPerColumnCCTM = 1,
                                          sparsity = 0.02,
                                          enableLayer4 = True,
                                          enableFeedback = self.ccConfig["enableFeedback"],
@@ -250,6 +256,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          useApicalTiebreak=self.ccConfig["ApicalTiebreak"],
                                          useIndependentApical=self.ccConfig["IndependentApical"],
                                          useApicalMatch=self.ccConfig["ApicalMatch"],
+                                         useTP = True,
                                          reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                          verbosity = 0)
     #in fact we only use spatial pooler of these CC's

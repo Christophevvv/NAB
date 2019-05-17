@@ -22,6 +22,7 @@ import abc
 import os
 import pandas
 import sys
+import numpy as np
 
 from datetime import datetime
 from nab.util import createPath, getProbationPeriod
@@ -47,6 +48,11 @@ class AnomalyDetector(object):
 
     self.inputMin = self.dataSet.data["value"].min()
     self.inputMax = self.dataSet.data["value"].max()
+    
+    self.mean = self.dataSet.data["value"].mean()
+    self.std = np.std(self.dataSet.data["value"])
+    self.maxValue = self.mean + 2*self.std
+    self.minValue = self.mean - 2*self.std
 
 
   def initialize(self):

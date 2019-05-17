@@ -3,6 +3,7 @@ import numpy as np
 #CPP spatial pooler:
 from nupic.bindings.algorithms import SpatialPooler
 from apical_tiebreak_temporal_memory import ApicalTiebreakPairMemory,ApicalTiebreakSequenceMemory,CrossColumnApicalTiebreakSequenceMemory
+from TP import TemporalPooler
 #from htmresearch.algorithms.output_layer import OutputLayer
 from math import floor
 from nupic.algorithms import anomaly
@@ -31,12 +32,14 @@ class CorticalColumn():
                  useApicalTiebreak=False,
                  useIndependentApical=False,
                  useApicalMatch=True,
+                 useTP=False,
                  reducedBasalPct=0.8,
                  verbosity=0):
         self.enableLayer4 = enableLayer4
         self.enableFeedback = enableFeedback
         self.burstFeedback = burstFeedback
         self.delayedFeedback = delayedFeedback
+        self.useTP = useTP
         self.SPlearning = SPlearning
         self.verbosity = verbosity
         self.spOutput = np.zeros(miniColumnCount, dtype="uint32")
@@ -86,6 +89,9 @@ class CorticalColumn():
                              activationThresholdPct=l3ActivationThresholdPct,
                              minThresholdPct=l3MinThresholdPct,
                              verbosity=verbosity)
+
+        self.TP = TemporalPooler(columnCount=miniColumnCount,
+                                 length=5)
                              
                              
         
@@ -113,6 +119,10 @@ class CorticalColumn():
         #NOTE: we compute layer3 first, this way we can give the active cells (of layer 3)
         #as feedback to layer4 (since the compute of layer4 computes the depolarized
         #cells directly after activating the cells for the current step.
+
+        #TP:
+        
+        
         if self.delayedFeedback == False:
           if self.enableFeedback:
             self.layer3.compute(self.activeColumns,basalInput)
@@ -128,7 +138,11 @@ class CorticalColumn():
               self.layer4.compute(self.activeColumns)
         if self.delayedFeedback:
           if self.enableFeedback:
-            self.layer3.compute(self.activeColumns,basalInput)
+            if self.useTP:
+              self.TP.compute(self.activeColumns,self.layer4.getCorrectlyPredictedColumns())
+              self.layer3.compute(self.TP.getSDR().nonzero()[0],basalInput)
+            else:
+              self.layer3.compute(self.activeColumns,basalInput)
 
     def computeRawAnomalyScore(self):
         predictedCells = self.layer4.TM.getPredictedCells()
@@ -333,6 +347,16 @@ class Layer4():
     def getActiveCells(self):
         ''' Get the indices of the active cells within this layer '''
         return self.TM.getActiveCells()
+
+    def getCorrectlyPredictedColumns(self):
+        ''' Get indices of active columns that had a predicted cell in it '''
+        predictedCells = self.TM.getPredictedCells()
+        activeCells = self.TM.getActiveCells()
+        cellsPerColumn = self.TM.getCellsPerColumn()
+        predictedColumns = np.unique(predictedCells/cellsPerColumn)
+        activeColumns = np.unique(activeCells/cellsPerColumn)
+        return np.intersect1d(predictedColumns,activeColumns)
+
 
     def getWinnerCells(self):
         ''' 
