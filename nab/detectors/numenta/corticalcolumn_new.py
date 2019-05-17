@@ -19,6 +19,7 @@ class CorticalColumn():
                  enableLayer4=True,
                  enableFeedback=True,
                  burstFeedback=False,
+                 delayedFeedback=False,
                  spSeed = 42,
                  tmSeed = 42,
                  SPlearning=True,
@@ -35,6 +36,7 @@ class CorticalColumn():
         self.enableLayer4 = enableLayer4
         self.enableFeedback = enableFeedback
         self.burstFeedback = burstFeedback
+        self.delayedFeedback = delayedFeedback
         self.SPlearning = SPlearning
         self.verbosity = verbosity
         self.spOutput = np.zeros(miniColumnCount, dtype="uint32")
@@ -111,8 +113,9 @@ class CorticalColumn():
         #NOTE: we compute layer3 first, this way we can give the active cells (of layer 3)
         #as feedback to layer4 (since the compute of layer4 computes the depolarized
         #cells directly after activating the cells for the current step.
-        if self.enableFeedback:
-          self.layer3.compute(self.activeColumns,basalInput)
+        if self.delayedFeedback == False:
+          if self.enableFeedback:
+            self.layer3.compute(self.activeColumns,basalInput)
         #layer3 active cells always unique per column?
         if self.enableLayer4:
             if self.enableFeedback:
@@ -123,6 +126,9 @@ class CorticalColumn():
                 self.layer4.compute(self.activeColumns,self.layer3.getWinnerCells())
             else:
               self.layer4.compute(self.activeColumns)
+        if self.delayedFeedback:
+          if self.enableFeedback:
+            self.layer3.compute(self.activeColumns,basalInput)
 
     def computeRawAnomalyScore(self):
         predictedCells = self.layer4.TM.getPredictedCells()

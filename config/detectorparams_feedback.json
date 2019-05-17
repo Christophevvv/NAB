@@ -101,6 +101,7 @@
 	      "corticalcolumn": {
 	      	"enableFeedback": false,
 	      	"burstFeedback": false,
+	      	"delayedFeedback": false,
 	      	"valueOnly": false,
 	      	"ccContext": false,
 	      	"enableSpatialTrick": false,

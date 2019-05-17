@@ -69,6 +69,7 @@ class FeedbackTMDetector(AnomalyDetector):
     #For hierarchy only
     self.valueCC = None
     self.deltaCC = None
+    self.deltaCC2 = None
     self.anomalyCC = None
     
     self.timeCC = None
@@ -115,6 +116,9 @@ class FeedbackTMDetector(AnomalyDetector):
         self.corticalColumn.compute(self.timestamp.nonzero()[0])
     #activeColumns = self.corticalColumn.getBasalOutput().nonzero()[0]
 
+    #SPATIAL TEST:
+#     self.deltaCC2.computeActiveColumns(self.delta_value)
+#     self.deltaCC2.compute(self.timestamp.nonzero()[0])
 
     #self.visualizeCC()
     #predictedCells = self.tempMem.getPredictiveCells()
@@ -124,8 +128,10 @@ class FeedbackTMDetector(AnomalyDetector):
     #rawScore = anomaly.computeRawAnomalyScore(activeColumns, predictedColumns)
     # Retrieve the anomaly score and write it to a file
     rawScore = self.corticalColumn.computeRawAnomalyScore()
+    #rawScoreDelta = self.deltaCC2.computeRawAnomalyScore()
 #     if timestamp.day > 8:
-#       print rawScore
+#       #print rawScore
+#       print value
 #       self.visualizeCC()
 #     if timestamp.hour == 9 and timestamp.minute == 0:
 #       #print self.timestamp.nonzero()[0]
@@ -155,6 +161,7 @@ class FeedbackTMDetector(AnomalyDetector):
         inputData["value"], rawScore, inputData["timestamp"])
       logScore = self.anomalyLikelihood.computeLogLikelihood(anomalyScore)
       finalScore = logScore
+      #finalScore = min(logScore * math.exp(0.5*rawScoreDelta),1)
     else:
       finalScore = rawScore
 
@@ -231,6 +238,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          enableLayer4 = True,
                                          enableFeedback = self.ccConfig["enableFeedback"],
                                          burstFeedback = self.ccConfig["burstFeedback"],
+                                         delayedFeedback = self.ccConfig["delayedFeedback"],
                                          spSeed = self.modelConfig["modelParams"]["spParams"]["seed"],
                                          tmSeed = self.modelConfig["modelParams"]["tmParams"]["seed"],
                                          SPlearning = True,
@@ -245,6 +253,29 @@ class FeedbackTMDetector(AnomalyDetector):
                                          reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                          verbosity = 0)
     #in fact we only use spatial pooler of these CC's
+#     self.deltaCC2 = CorticalColumn(inputWidth = self.delta_encoder.getWidth(),
+#                                   neighborCount = 1,
+#                                   miniColumnCount = 2048,
+#                                   potentialRadius = width, #make sure this matches width/2
+#                                   cellsPerColumnTM = 32,
+#                                   cellsPerColumnCCTM = 32,
+#                                   sparsity = 0.02,
+#                                   enableLayer4 = True,
+#                                   enableFeedback = self.ccConfig["enableFeedback"],
+#                                   burstFeedback = self.ccConfig["burstFeedback"],
+#                                   spSeed = self.modelConfig["modelParams"]["spParams"]["seed"],
+#                                   tmSeed = self.modelConfig["modelParams"]["tmParams"]["seed"],
+#                                   SPlearning = True,
+#                                   basalWidth = basalWidth,
+#                                   l3SampleSize=self.ccConfig["l3SampleSize"],
+#                                   l3ActivationThresholdPct=self.ccConfig["l3ActivationThresholdPct"],
+#                                   l3MinThresholdPct=self.ccConfig["l3MinThresholdPct"],
+#                                   useApicalModulationBasalThreshold=self.ccConfig["ApicalModulation"],
+#                                   useApicalTiebreak=self.ccConfig["ApicalTiebreak"],
+#                                   useIndependentApical=self.ccConfig["IndependentApical"],
+#                                   useApicalMatch=self.ccConfig["ApicalMatch"],
+#                                   reducedBasalPct=self.ccConfig["reducedBasalPct"],
+#                                   verbosity = 0)    
     self.deltaCC = CorticalColumn(inputWidth = self.delta_encoder.getWidth(),
                                   neighborCount = 1,
                                   miniColumnCount = 2048,
@@ -279,13 +310,15 @@ class FeedbackTMDetector(AnomalyDetector):
 #                                   maxSegmentsPerCell=128,
 #                                   maxSynapsesPerSegment=32,
 #                                   seed=1960)
-    
+
     if self.useLikelihood:
       # Initialize the anomaly likelihood object
       numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
+      #print self.probationaryPeriod-numentaLearningPeriod
       self.anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood(
         learningPeriod=numentaLearningPeriod,
         estimationSamples=self.probationaryPeriod-numentaLearningPeriod,
+        #historicWindowSize=1000,
         reestimationPeriod=100
       )
       
