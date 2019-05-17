@@ -103,6 +103,7 @@
 	      	"burstFeedback": false,
 	      	"delayedFeedback": false,
 	      	"smartResolution": false,
+	      	"nrBuckets": 130,
 	      	"valueOnly": false,
 	      	"ccContext": false,
 	      	"enableSpatialTrick": false,
