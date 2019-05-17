@@ -335,7 +335,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                   miniColumnCount = 2048,
                                   potentialRadius = 200,
                                   cellsPerColumnTM = 32,
-                                  cellsPerColumnCCTM = 64,
+                                  cellsPerColumnCCTM = 32,
                                   sparsity = 0.02,
                                   enableLayer4 = True,
                                   enableFeedback = self.ccConfig["enableFeedback"],
