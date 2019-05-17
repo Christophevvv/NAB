@@ -129,7 +129,7 @@ class FeedbackTMDetector(AnomalyDetector):
     # Retrieve the anomaly score and write it to a file
     rawScore = self.corticalColumn.computeRawAnomalyScore()
     #rawScoreDelta = self.deltaCC2.computeRawAnomalyScore()
-#     if timestamp.day > 26:
+#     if timestamp.day > 8:
 #       #print rawScore
 #       print value
 #       self.visualizeCC()
@@ -239,7 +239,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          miniColumnCount = 2048,
                                          potentialRadius = width, #make sure this matches width/2
                                          cellsPerColumnTM = 32,
-                                         cellsPerColumnCCTM = 1,
+                                         cellsPerColumnCCTM = 32,
                                          sparsity = 0.02,
                                          enableLayer4 = True,
                                          enableFeedback = self.ccConfig["enableFeedback"],
@@ -256,7 +256,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          useApicalTiebreak=self.ccConfig["ApicalTiebreak"],
                                          useIndependentApical=self.ccConfig["IndependentApical"],
                                          useApicalMatch=self.ccConfig["ApicalMatch"],
-                                         useTP = True,
+                                         useTP = False,
                                          reducedBasalPct=self.ccConfig["reducedBasalPct"],
                                          verbosity = 0)
     #in fact we only use spatial pooler of these CC's
