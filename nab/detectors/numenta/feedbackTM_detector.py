@@ -161,7 +161,8 @@ class FeedbackTMDetector(AnomalyDetector):
         inputData["value"], rawScore, inputData["timestamp"])
       logScore = self.anomalyLikelihood.computeLogLikelihood(anomalyScore)
       finalScore = logScore
-      #finalScore = min(logScore * math.exp(0.5*rawScoreDelta),1)
+#       if rawScore > 0.5:
+#         finalScore = min(logScore * math.exp(0.5*rawScoreDelta),1)
     else:
       finalScore = rawScore
 

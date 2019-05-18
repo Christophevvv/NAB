@@ -5,6 +5,12 @@
 	    "predictedField": "c1",
 	    "inputPredictedField": "auto"
 	  },
+	  "generic": {
+	  	"smartResolution": true,
+	    "nrBuckets": 130,
+	    "valueOnly": true,
+	    "enableSpatialTrick": true
+	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {
 	      "seconds": 0,
@@ -97,7 +103,7 @@
 	        "anomalyCacheRecords": null,
 	        "autoDetectThreshold": null,
 	        "autoDetectWaitRecords": 5030
-	      }
+	      }      
 	    }
 	  }
 	}

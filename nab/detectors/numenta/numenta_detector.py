@@ -105,8 +105,9 @@ class NumentaDetector(AnomalyDetector):
     else:
       finalScore = rawScore
 
-#     if spatialAnomaly:
-#       finalScore = 1.0
+    if self.genericConfig["enableSpatialTrick"]:
+      if spatialAnomaly:
+        finalScore = 1.0
     spatial_anomaly = 0
     if spatialAnomaly:
       spatial_anomaly = 1
@@ -117,15 +118,23 @@ class NumentaDetector(AnomalyDetector):
   def initialize(self):
     rangePadding = abs(self.inputMax - self.inputMin) * 0.2
     if not (self.parameters == None):
+
+      self.genericConfig = self.parameters["generic"]
       minVal=self.inputMin-rangePadding
       maxVal=self.inputMax+rangePadding
       # Handle the corner case where the incoming min and max are the same
       if minVal == maxVal:
         maxVal = minVal + 1  
       valueEncoder = self.parameters["modelConfig"]["modelParams"]["sensorParams"]["encoders"]["value"]
-      resolution = max(0.001,(maxVal - minVal) / 130)
-      valueEncoder["resolution"] = resolution
+      if self.genericConfig["smartResolution"]:
+        resolution = max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"]))
+      else:
+        resolution = max(0.001,(maxVal - minVal) / 130)
       self.modelConfig = self.parameters["modelConfig"]
+      if self.genericConfig["valueOnly"]:
+        self.modelConfig["modelParams"]["sensorParams"]["encoders"]["timestamp_timeOfDay"] = None
+      valueEncoder["resolution"] = resolution
+
       self.sensorParams = valueEncoder #To check if equal to _setupEncoderParams assignment
     else:
       self.modelConfig = getScalarMetricWithTimeOfDayAnomalyParams(
