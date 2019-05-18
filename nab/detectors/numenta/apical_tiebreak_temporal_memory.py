@@ -73,6 +73,9 @@ class ApicalTiebreakTemporalMemory(object):
                useIndependentApical=False,
                useApicalMatch=True,
                seed=42,
+               activationThresholdApical = 13,
+               minThresholdApical = 10,
+               sampleSizeApical = 20,
                verbosity=0):
     """
     @param columnCount (int)
@@ -142,6 +145,10 @@ class ApicalTiebreakTemporalMemory(object):
     self.apicalPredictedSegmentDecrement = apicalPredictedSegmentDecrement
     self.activationThreshold = activationThreshold
     self.maxSynapsesPerSegment = maxSynapsesPerSegment
+    
+    self.sampleSizeApical = sampleSizeApical
+    self.activationThresholdApical = activationThresholdApical
+    self.minThresholdApical = minThresholdApical
 
     self.basalConnections = SparseMatrixConnections(columnCount*cellsPerColumn,
                                                     basalInputSize)
@@ -232,7 +239,7 @@ class ApicalTiebreakTemporalMemory(object):
      matchingApicalSegments,
      apicalPotentialOverlaps) = self._calculateApicalSegmentActivity(
        self.apicalConnections, apicalInput, self.connectedPermanence,
-       self.activationThreshold, self.minThreshold)
+       self.activationThresholdApical, self.minThresholdApical)
 
     #removed if learn or ...
     if self.useApicalModulationBasalThreshold==False:
@@ -353,7 +360,7 @@ class ApicalTiebreakTemporalMemory(object):
         self._learn(self.apicalConnections, self.rng, learningSegments,
                     apicalReinforceCandidates, apicalGrowthCandidates,
                     self.apicalPotentialOverlaps, self.initialPermanence,
-                    self.sampleSize, self.permanenceIncrement,
+                    self.sampleSizeApical, self.permanenceIncrement,
                     self.permanenceDecrement, self.maxSynapsesPerSegment)
         #print "end learning apical"
       # Punish incorrect predictions
@@ -382,7 +389,7 @@ class ApicalTiebreakTemporalMemory(object):
         #print "learning new apical segment"
         self._learnOnNewSegments(self.apicalConnections, self.rng,
                                  newApicalSegmentCells, apicalGrowthCandidates,
-                                 self.initialPermanence, self.sampleSize,
+                                 self.initialPermanence, self.sampleSizeApical,
                                  self.maxSynapsesPerSegment)
         #print "end learning new apical segment"
 

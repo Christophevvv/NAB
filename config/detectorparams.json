@@ -6,10 +6,10 @@
 	    "inputPredictedField": "auto"
 	  },
 	  "generic": {
-	  	"smartResolution": true,
+	  	"smartResolution": false,
 	    "nrBuckets": 130,
-	    "valueOnly": true,
-	    "enableSpatialTrick": true
+	    "valueOnly": false,
+	    "enableSpatialTrick": false
 	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {
