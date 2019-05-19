@@ -129,7 +129,7 @@ class NumentaDetector(AnomalyDetector):
       if self.genericConfig["smartResolution"]:
         resolution = max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"]))
       else:
-        resolution = max(0.001,(maxVal - minVal) / 130)
+        resolution = max(0.001,(maxVal - minVal) / float(self.genericConfig["nrBuckets"]))
       self.modelConfig = self.parameters["modelConfig"]
       if self.genericConfig["valueOnly"]:
         self.modelConfig["modelParams"]["sensorParams"]["encoders"]["timestamp_timeOfDay"] = None
@@ -157,7 +157,7 @@ class NumentaDetector(AnomalyDetector):
       self.anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood(
         learningPeriod=numentaLearningPeriod,
         estimationSamples=self.probationaryPeriod-numentaLearningPeriod,
-        reestimationPeriod=100
+        reestimationPeriod=self.genericConfig["reestimationPeriod"]
       )
 
 

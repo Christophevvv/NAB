@@ -9,7 +9,7 @@
 	  	"smartResolution": false,
 	    "nrBuckets": 130,
 	    "valueOnly": false,
-	    "enableSpatialTrick": false,
+	    "enableSpatialTrick": true,
 	    "reestimationPeriod": 100
 	  },	  
 	  "modelConfig": {
