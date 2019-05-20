@@ -1405,7 +1405,7 @@ class ApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
     self.depolarizeCells(self.activeCells, apicalInput, learn) 
     self.prevPredictedCells = self.predictedCells #backward but works for anomaly score   
     self.activateCells(activeColumns, self.activeCells, apicalInput,
-                       self.winnerCells, apicalInput, learn)
+                       self.winnerCells, apicalGrowthCandidates, learn)
 
 
     #self.prevApicalInput = apicalInput.copy()
