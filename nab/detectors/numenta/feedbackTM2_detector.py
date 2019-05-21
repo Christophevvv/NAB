@@ -94,7 +94,7 @@ class FeedbackTM2Detector(AnomalyDetector):
     self.date_encoder.encodeIntoArray(timestamp,self.timestamp)
     self.delta_encoder.encodeIntoArray(abs(self.prevVal-value), self.delta_value)
     #save value
-    #self.prevVal = value
+    self.prevVal = value
 
 
     #self.computeHierarchy()
