@@ -189,6 +189,10 @@ if __name__ == "__main__":
     from nab.detectors.numenta.numentaTM_detector import NumentaTMDetector
   if "feedbackTM" in args.detectors:
     from nab.detectors.numenta.feedbackTM_detector import FeedbackTMDetector
+  if "feedbackTM2" in args.detectors:
+    from nab.detectors.numenta.feedbackTM2_detector import FeedbackTM2Detector    
+  if "spatial" in args.detectors:
+    from nab.detectors.numenta.spatial_detector import SpatialDetector
   if "null" in args.detectors:
     from nab.detectors.null.null_detector import NullDetector
   if "random" in args.detectors:
