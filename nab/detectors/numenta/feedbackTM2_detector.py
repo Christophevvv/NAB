@@ -92,12 +92,14 @@ class FeedbackTM2Detector(AnomalyDetector):
     
     self.value_encoder.encodeIntoArray(value,self.value)
     self.date_encoder.encodeIntoArray(timestamp,self.timestamp)
-    #self.delta_encoder.encodeIntoArray(abs(self.prevVal-value), self.delta_value)
+    self.delta_encoder.encodeIntoArray(abs(self.prevVal-value), self.delta_value)
     #save value
     #self.prevVal = value
 
 
-    self.computeHierarchy()
+    #self.computeHierarchy()
+    self.valueCC.computeActiveColumns(np.concatenate((self.timestamp,self.value)))
+    self.valueCC.compute(self.delta_value.nonzero()[0])
     # Retrieve the anomaly score and write it to a file
     rawScore = self.valueCC.computeRawAnomalyScore()
 
@@ -201,12 +203,12 @@ class FeedbackTM2Detector(AnomalyDetector):
     neighborCount = 1
     minicolumnCount = 2048
     cellsPerColumnCCTM = 32
-    basalWidth = minicolumnCount*cellsPerColumnCCTM*neighborCount
+    basalWidth = self.delta_encoder.getWidth()#minicolumnCount*cellsPerColumnCCTM*neighborCount
 
-    self.valueCC = CorticalColumn(inputWidth = self.value_encoder.getWidth(),
+    self.valueCC = CorticalColumn(inputWidth = self.value_encoder.getWidth()+self.date_encoder.getWidth(),
                                   neighborCount = neighborCount,
                                   miniColumnCount = minicolumnCount,
-                                  potentialRadius = self.value_encoder.getWidth(), #make sure this matches width/2
+                                  potentialRadius = self.value_encoder.getWidth()+self.date_encoder.getWidth(), #make sure this matches width/2
                                   cellsPerColumnTM = 32,
                                   cellsPerColumnCCTM = cellsPerColumnCCTM,
                                   sparsity = 0.02,
