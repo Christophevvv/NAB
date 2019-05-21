@@ -34,6 +34,7 @@ class CorticalColumn():
                  useApicalMatch=True,
                  useTP=False,
                  reducedBasalPct=0.8,
+                 initialPermanenceApical=0.21,
                  verbosity=0):
         self.enableLayer4 = enableLayer4
         self.enableFeedback = enableFeedback
@@ -76,6 +77,7 @@ class CorticalColumn():
                                  useIndependentApical=useIndependentApical,
                                  useApicalMatch=useApicalMatch,
                                  reducedBasalPct=reducedBasalPct,
+                                 initialPermanenceApical=initialPermanenceApical,
                                  seed=tmSeed,
                                  verbosity=verbosity)
         self.layer3 = Layer3(neighborCount=neighborCount,
@@ -279,7 +281,8 @@ class Layer4():
                  useApicalTiebreak=False,
                  useIndependentApical=False,
                  useApicalMatch=True,
-                 reducedBasalPct=0.8,                
+                 reducedBasalPct=0.8,
+                 initialPermanenceApical=0.21,               
                  seed=42,
                  verbosity=0):
         self.verbosity = verbosity
@@ -304,6 +307,7 @@ class Layer4():
                                                useApicalTiebreak=useApicalTiebreak,
                                                useIndependentApical=useIndependentApical,
                                                useApicalMatch=useApicalMatch,
+                                               initialPermanenceApical=initialPermanenceApical,
                                                seed=seed)
 
 

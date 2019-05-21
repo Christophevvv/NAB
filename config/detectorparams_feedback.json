@@ -115,7 +115,8 @@
 					"ApicalTiebreak": false,
 					"IndependentApical": false,
 					"ApicalMatch": true,
-					"reducedBasalPct": 0.8
+					"reducedBasalPct": 0.8,
+					"initialPermanenceApical": 0.21
 	      }
 	    }
 	  }

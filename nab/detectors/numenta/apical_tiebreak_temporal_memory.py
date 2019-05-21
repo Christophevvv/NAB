@@ -76,6 +76,7 @@ class ApicalTiebreakTemporalMemory(object):
                activationThresholdApical = 13,
                minThresholdApical = 10,
                sampleSizeApical = 20,
+               initialPermanenceApical = 0.21,
                verbosity=0):
     """
     @param columnCount (int)
@@ -149,6 +150,7 @@ class ApicalTiebreakTemporalMemory(object):
     self.sampleSizeApical = sampleSizeApical
     self.activationThresholdApical = activationThresholdApical
     self.minThresholdApical = minThresholdApical
+    self.initialPermanenceApical = initialPermanenceApical
 
     self.basalConnections = SparseMatrixConnections(columnCount*cellsPerColumn,
                                                     basalInputSize)
@@ -359,7 +361,7 @@ class ApicalTiebreakTemporalMemory(object):
         #print "learning apical"
         self._learn(self.apicalConnections, self.rng, learningSegments,
                     apicalReinforceCandidates, apicalGrowthCandidates,
-                    self.apicalPotentialOverlaps, self.initialPermanence,
+                    self.apicalPotentialOverlaps, self.initialPermanenceApical,
                     self.sampleSizeApical, self.permanenceIncrement,
                     self.permanenceDecrement, self.maxSynapsesPerSegment)
         #print "end learning apical"
@@ -389,7 +391,7 @@ class ApicalTiebreakTemporalMemory(object):
         #print "learning new apical segment"
         self._learnOnNewSegments(self.apicalConnections, self.rng,
                                  newApicalSegmentCells, apicalGrowthCandidates,
-                                 self.initialPermanence, self.sampleSizeApical,
+                                 self.initialPermanenceApical, self.sampleSizeApical,
                                  self.maxSynapsesPerSegment)
         #print "end learning new apical segment"
 
@@ -1292,7 +1294,8 @@ class ApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
                useApicalModulationBasalThreshold=True,
                useApicalTiebreak=False, 
                useIndependentApical=False,
-               useApicalMatch=True,             
+               useApicalMatch=True,
+               initialPermanenceApical=0.21,
                seed=42):
     params = {
       "columnCount": columnCount,
@@ -1313,7 +1316,8 @@ class ApicalTiebreakSequenceMemory(ApicalTiebreakTemporalMemory):
       "useApicalModulationBasalThreshold": useApicalModulationBasalThreshold,
       "useApicalTiebreak": useApicalTiebreak,
       "useIndependentApical": useIndependentApical,
-      "useApicalMatch": useApicalMatch,     
+      "useApicalMatch": useApicalMatch,
+      "initialPermanenceApical": initialPermanenceApical,
       "seed": seed,
     }
 

@@ -259,6 +259,7 @@ class FeedbackTMDetector(AnomalyDetector):
                                          useApicalMatch=self.ccConfig["ApicalMatch"],
                                          useTP = False,
                                          reducedBasalPct=self.ccConfig["reducedBasalPct"],
+                                         initialPermanenceApical=self.ccConfig["initialPermanenceApical"],
                                          verbosity = 0)
     #in fact we only use spatial pooler of these CC's
 #     self.deltaCC2 = CorticalColumn(inputWidth = self.delta_encoder.getWidth(),
