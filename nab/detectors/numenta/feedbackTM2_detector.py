@@ -91,14 +91,14 @@ class FeedbackTM2Detector(AnomalyDetector):
     timestamp = inputData["timestamp"]
     
     self.value_encoder.encodeIntoArray(value,self.value)
-    self.date_encoder.encodeIntoArray(timestamp,self.timestamp)
+    #self.date_encoder.encodeIntoArray(timestamp,self.timestamp)
     self.delta_encoder.encodeIntoArray(abs(self.prevVal-value), self.delta_value)
     #save value
     self.prevVal = value
 
 
     #self.computeHierarchy()
-    self.valueCC.computeActiveColumns(np.concatenate((self.timestamp,self.value)))
+    self.valueCC.computeActiveColumns(self.value)
     self.valueCC.compute(self.delta_value.nonzero()[0])
     # Retrieve the anomaly score and write it to a file
     rawScore = self.valueCC.computeRawAnomalyScore()
