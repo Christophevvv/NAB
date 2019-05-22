@@ -205,10 +205,10 @@ class FeedbackTM2Detector(AnomalyDetector):
     cellsPerColumnCCTM = 32
     basalWidth = self.delta_encoder.getWidth()#minicolumnCount*cellsPerColumnCCTM*neighborCount
 
-    self.valueCC = CorticalColumn(inputWidth = self.value_encoder.getWidth()+self.date_encoder.getWidth(),
+    self.valueCC = CorticalColumn(inputWidth = self.value_encoder.getWidth(),
                                   neighborCount = neighborCount,
                                   miniColumnCount = minicolumnCount,
-                                  potentialRadius = self.value_encoder.getWidth()+self.date_encoder.getWidth(), #make sure this matches width/2
+                                  potentialRadius = self.value_encoder.getWidth(), #make sure this matches width/2
                                   cellsPerColumnTM = 32,
                                   cellsPerColumnCCTM = cellsPerColumnCCTM,
                                   sparsity = 0.02,
