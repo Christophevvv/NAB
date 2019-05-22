@@ -115,7 +115,8 @@
 		  "ApicalTiebreak": true,
 		  "IndependentApical": true,
 		  "ApicalMatch": true,
-		  "reducedBasalPct": 0.8
+		  "reducedBasalPct": 0.8,
+		  "enablePunishment": false
 	      }
 	    }
 	  }
