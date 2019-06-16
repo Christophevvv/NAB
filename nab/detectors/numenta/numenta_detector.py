@@ -126,6 +126,7 @@ class NumentaDetector(AnomalyDetector):
       if minVal == maxVal:
         maxVal = minVal + 1  
       valueEncoder = self.parameters["modelConfig"]["modelParams"]["sensorParams"]["encoders"]["value"]
+      type = valueEncoder["type"]
       if self.genericConfig["smartResolution"]:
         resolution = max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"]))
       else:
@@ -134,6 +135,15 @@ class NumentaDetector(AnomalyDetector):
       if self.genericConfig["valueOnly"]:
         self.modelConfig["modelParams"]["sensorParams"]["encoders"]["timestamp_timeOfDay"] = None
       valueEncoder["resolution"] = resolution
+      if type == "ScalarEncoder":
+        valueEncoder["n"] = 0
+        valueEncoder["minval"] = self.inputMin
+        valueEncoder["maxval"] = self.inputMax
+        valueEncoder.pop('seed')
+      if type == "AdaptiveScalarEncoder":
+        valueEncoder.pop("resolution")
+        valueEncoder.pop("seed")
+        
 
       self.sensorParams = valueEncoder #To check if equal to _setupEncoderParams assignment
     else:
