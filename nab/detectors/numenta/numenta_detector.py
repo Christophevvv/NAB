@@ -137,8 +137,12 @@ class NumentaDetector(AnomalyDetector):
       valueEncoder["resolution"] = resolution
       if type == "ScalarEncoder":
         valueEncoder["n"] = 0
-        valueEncoder["minval"] = self.inputMin
-        valueEncoder["maxval"] = self.inputMax
+        minVal = self.inputMin
+        maxVal = self.inputMax
+        if minVal == maxVal:
+          maxVal = minVal + 1
+        valueEncoder["minval"] = minVal
+        valueEncoder["maxval"] = maxVal
         if "seed" in valueEncoder:
           valueEncoder.pop("seed")
       if type == "AdaptiveScalarEncoder":
