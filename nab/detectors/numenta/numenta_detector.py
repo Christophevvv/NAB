@@ -139,12 +139,14 @@ class NumentaDetector(AnomalyDetector):
         valueEncoder["n"] = 0
         valueEncoder["minval"] = self.inputMin
         valueEncoder["maxval"] = self.inputMax
-        valueEncoder.pop('seed')
+        if "seed" in valueEncoder:
+          valueEncoder.pop("seed")
       if type == "AdaptiveScalarEncoder":
         valueEncoder.pop("resolution")
-        valueEncoder.pop("seed")
+        if "seed" in valueEncoder:
+          valueEncoder.pop("seed")
         
-
+      #print valueEncoder
       self.sensorParams = valueEncoder #To check if equal to _setupEncoderParams assignment
     else:
       self.modelConfig = getScalarMetricWithTimeOfDayAnomalyParams(
