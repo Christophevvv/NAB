@@ -64,6 +64,7 @@ class NumentaDetector(AnomalyDetector):
     
     self.stepsize = None
     self.prevTimestamp = None
+    self.genericConfig = None
 
 
   def getAdditionalHeaders(self):
