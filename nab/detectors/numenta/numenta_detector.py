@@ -88,22 +88,22 @@ class NumentaDetector(AnomalyDetector):
         if self.stepsize == None:
           self.stepsize = duration.total_seconds()
         else:
-          if duration.total_seconds() != self.stepsize:
+#           if duration.total_seconds() != self.stepsize:
+#             #print duration.total_seconds()
+#             #print self.stepsize
+#             self.stepsize = duration.total_seconds()
+#             self.model.resetSequenceStates()
+#             #print "RESETTING"
+          if duration.total_seconds() < self.stepsize:
+            self.stepsize = duration.total_seconds()
+          elif duration.total_seconds() > self.genericConfig["missingThreshold"]*self.stepsize:
             #print duration.total_seconds()
             #print self.stepsize
-            self.stepsize = duration.total_seconds()
-            self.model.resetSequenceStates()
+            #WE missed a value, reset TM
             #print "RESETTING"
-#           if duration.total_seconds() < self.stepsize:
-#             self.stepsize = duration.total_seconds()
-#           elif duration.total_seconds() > self.stepsize:
-#             print duration.total_seconds()
-#             print self.stepsize
-#             #WE missed a value, reset TM
-#             print "RESETTING"
-#             self.model.resetSequenceStates()
-#           else:
-#             print "EQUAL"
+            self.model.resetSequenceStates()
+          #else:
+            #print "EQUAL"
       self.prevTimestamp = timestamp
           
       
