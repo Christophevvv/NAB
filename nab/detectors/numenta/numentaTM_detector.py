@@ -48,6 +48,8 @@ class NumentaTMDetector(NumentaDetector):
 
 
   def initialize(self):
+    if not (self.parameters == None):
+      self.genericConfig = self.parameters["generic"]
     # Get config params, setting the RDSE resolution
     rangePadding = abs(self.inputMax - self.inputMin) * 0.2
 
