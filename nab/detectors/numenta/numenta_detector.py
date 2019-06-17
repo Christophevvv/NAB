@@ -30,6 +30,7 @@ except:
   from nupic.frameworks.opf.modelfactory import ModelFactory
 
 from nab.detectors.base import AnomalyDetector
+import numpy as np
 
 # Fraction outside of the range of values seen so far that will be considered
 # a spatial anomaly regardless of the anomaly likelihood calculation. This
@@ -82,6 +83,7 @@ class NumentaDetector(AnomalyDetector):
     and "rawScore" corresponds to "anomaly_score". Sorry about that.
     """
     # Send it to Numenta detector and get back the results
+    reset = False
     if self.genericConfig["missingValues"]:
       timestamp = inputData["timestamp"]
       if self.prevTimestamp == None:
@@ -93,7 +95,7 @@ class NumentaDetector(AnomalyDetector):
         elif self.dataIndex == self.numentaLearningPeriod:
           arr = np.asarray(self.dataWindows)
           arr.sort()          
-          self.stepsize = np.mean(arr)
+          self.stepsize = np.median(arr)
           print "Settled on stepsize"
           print self.stepsize
 #         if self.stepsize == None:
@@ -112,6 +114,7 @@ class NumentaDetector(AnomalyDetector):
             print self.stepsize
             #WE missed a value, reset TM
             print "RESETTING"
+            reset = True
             self.model.resetSequenceStates()
           #else:
             #print "EQUAL"
@@ -127,6 +130,9 @@ class NumentaDetector(AnomalyDetector):
 
     # Retrieve the anomaly score and write it to a file
     rawScore = result.inferences["anomalyScore"]
+    #dont want increase here
+    if reset:
+      rawScore = 0.0
 
     # Update min/max values and check if there is a spatial anomaly
     spatialAnomaly = False
@@ -220,7 +226,7 @@ class NumentaDetector(AnomalyDetector):
       self.numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
       self.anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood(
         learningPeriod=self.numentaLearningPeriod,
-        estimationSamples=self.probationaryPeriod-numentaLearningPeriod,
+        estimationSamples=self.probationaryPeriod-self.numentaLearningPeriod,
         reestimationPeriod=self.genericConfig["reestimationPeriod"]
       )
 
