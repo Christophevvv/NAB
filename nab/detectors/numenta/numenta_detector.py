@@ -88,8 +88,8 @@ class NumentaDetector(AnomalyDetector):
           self.stepsize = duration.total_seconds()
         else:
           if duration.total_seconds() != self.stepsize:
-            print duration.total_seconds()
-            print self.stepsize
+            #print duration.total_seconds()
+            #print self.stepsize
             self.stepsize = duration.total_seconds()
             self.model.resetSequenceStates()
             #print "RESETTING"
