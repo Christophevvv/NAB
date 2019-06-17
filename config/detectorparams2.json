@@ -10,7 +10,8 @@
 	    "nrBuckets": 130,
 	    "valueOnly": false,
 	    "enableSpatialTrick": true,
-	    "reestimationPeriod": 100
+	    "reestimationPeriod": 100,
+	    "adaptiveMinMax": false
 	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {
