@@ -65,6 +65,8 @@ class NumentaDetector(AnomalyDetector):
     self.stepsize = None
     self.prevTimestamp = None
     self.genericConfig = None
+    self.dataIndex = 0
+    self.dataWindows = []
 
 
   def getAdditionalHeaders(self):
@@ -85,8 +87,16 @@ class NumentaDetector(AnomalyDetector):
         self.prevTimestamp = timestamp
       else:
         duration = timestamp - self.prevTimestamp
-        if self.stepsize == None:
-          self.stepsize = duration.total_seconds()
+        if self.dataIndex < self.numentaLearningPeriod:
+          self.dataWindows.append(duration.total_seconds())
+        elif self.dataIndex == self.numentaLearningPeriod:
+          arr = np.asarray(self.dataWindows)
+          arr.sort()          
+          self.stepsize = np.mean(arr)
+          print "Settled on stepsize"
+          print self.stepsize
+#         if self.stepsize == None:
+#           self.stepsize = duration.total_seconds()
         else:
 #           if duration.total_seconds() != self.stepsize:
 #             #print duration.total_seconds()
@@ -94,17 +104,18 @@ class NumentaDetector(AnomalyDetector):
 #             self.stepsize = duration.total_seconds()
 #             self.model.resetSequenceStates()
 #             #print "RESETTING"
-          if duration.total_seconds() < self.stepsize:
-            self.stepsize = duration.total_seconds()
-          elif duration.total_seconds() > self.genericConfig["missingThreshold"]*self.stepsize:
-            #print duration.total_seconds()
-            #print self.stepsize
+#           if duration.total_seconds() < self.stepsize:
+#             self.stepsize = duration.total_seconds()
+          if duration.total_seconds() > self.genericConfig["missingThreshold"]*self.stepsize:
+            print duration.total_seconds()
+            print self.stepsize
             #WE missed a value, reset TM
-            #print "RESETTING"
+            print "RESETTING"
             self.model.resetSequenceStates()
           #else:
             #print "EQUAL"
       self.prevTimestamp = timestamp
+      self.dataIndex += 1
           
       
     
@@ -205,9 +216,9 @@ class NumentaDetector(AnomalyDetector):
 
     if self.useLikelihood:
       # Initialize the anomaly likelihood object
-      numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
+      self.numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
       self.anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood(
-        learningPeriod=numentaLearningPeriod,
+        learningPeriod=self.numentaLearningPeriod,
         estimationSamples=self.probationaryPeriod-numentaLearningPeriod,
         reestimationPeriod=self.genericConfig["reestimationPeriod"]
       )
