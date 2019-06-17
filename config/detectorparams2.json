@@ -11,7 +11,8 @@
 	    "valueOnly": false,
 	    "enableSpatialTrick": true,
 	    "reestimationPeriod": 100,
-	    "adaptiveMinMax": false
+	    "adaptiveMinMax": false,
+	    "missingValues": false
 	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {

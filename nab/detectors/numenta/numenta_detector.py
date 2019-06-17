@@ -61,6 +61,9 @@ class NumentaDetector(AnomalyDetector):
     # useful for checking the efficacy of AnomalyLikelihood. You will need
     # to re-optimize the thresholds when running with this setting.
     self.useLikelihood = True
+    
+    self.stepsize = None
+    self.prevTimestamp = None
 
 
   def getAdditionalHeaders(self):
@@ -75,6 +78,35 @@ class NumentaDetector(AnomalyDetector):
     and "rawScore" corresponds to "anomaly_score". Sorry about that.
     """
     # Send it to Numenta detector and get back the results
+    if self.genericConfig["missingValues"]:
+      timestamp = inputData["timestamp"]
+      if self.prevTimestamp == None:
+        self.prevTimestamp = timestamp
+      else:
+        duration = timestamp - self.prevTimestamp
+        if self.stepsize == None:
+          self.stepsize = duration.total_seconds()
+        else:
+          if duration.total_seconds() != self.stepsize:
+            print duration.total_seconds()
+            print self.stepsize
+            self.stepsize = duration.total_seconds()
+            self.model.resetSequenceStates()
+            #print "RESETTING"
+#           if duration.total_seconds() < self.stepsize:
+#             self.stepsize = duration.total_seconds()
+#           elif duration.total_seconds() > self.stepsize:
+#             print duration.total_seconds()
+#             print self.stepsize
+#             #WE missed a value, reset TM
+#             print "RESETTING"
+#             self.model.resetSequenceStates()
+#           else:
+#             print "EQUAL"
+      self.prevTimestamp = timestamp
+          
+      
+    
     result = self.model.run(inputData)
 
     # Get the value
