@@ -96,8 +96,8 @@ class NumentaDetector(AnomalyDetector):
           arr = np.asarray(self.dataWindows)
           arr.sort()          
           self.stepsize = np.median(arr)
-          print "Settled on stepsize"
-          print self.stepsize
+          #print "Settled on stepsize"
+          #print self.stepsize
 #         if self.stepsize == None:
 #           self.stepsize = duration.total_seconds()
         else:
@@ -110,10 +110,10 @@ class NumentaDetector(AnomalyDetector):
 #           if duration.total_seconds() < self.stepsize:
 #             self.stepsize = duration.total_seconds()
           if duration.total_seconds() > self.genericConfig["missingThreshold"]*self.stepsize:
-            print duration.total_seconds()
-            print self.stepsize
+            #print duration.total_seconds()
+            #print self.stepsize
             #WE missed a value, reset TM
-            print "RESETTING"
+            #print "RESETTING"
             reset = True
             self.model.resetSequenceStates()
           #else:
@@ -148,6 +148,9 @@ class NumentaDetector(AnomalyDetector):
       self.minVal = value
 
     if self.useLikelihood:
+      if reset:
+        finalScore = 0.0
+        break
       # Compute log(anomaly likelihood)
       anomalyScore = self.anomalyLikelihood.anomalyProbability(
         inputData["value"], rawScore, inputData["timestamp"])
