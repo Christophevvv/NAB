@@ -148,7 +148,7 @@ class NumentaDetector(AnomalyDetector):
       self.minVal = value
 
     if self.useLikelihood:
-      if reset:
+      if reset and self.genericConfig["ignoreReset"]:
         finalScore = 0.0
       else:
         # Compute log(anomaly likelihood)
