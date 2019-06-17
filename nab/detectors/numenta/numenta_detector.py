@@ -30,6 +30,7 @@ except:
   from nupic.frameworks.opf.modelfactory import ModelFactory
 
 from nab.detectors.base import AnomalyDetector
+from nab.detectors.context_ose.cad_ose import ContextualAnomalyDetectorOSE
 import numpy as np
 
 # Fraction outside of the range of values seen so far that will be considered
@@ -69,6 +70,8 @@ class NumentaDetector(AnomalyDetector):
     self.dataIndex = 0
     self.dataWindows = []
     self.numentaLearningPeriod = None
+    
+    self.cadose = None
 
 
   def getAdditionalHeaders(self):
@@ -159,6 +162,10 @@ class NumentaDetector(AnomalyDetector):
     else:
       finalScore = rawScore
 
+    if self.genericConfig["OSE"]:
+      anomalyScore = self.cadose.getAnomalyScore(inputData)
+      finalScore = max(finalScore,anomalyScore)
+
     if self.genericConfig["enableSpatialTrick"]:
       if spatialAnomaly:
         finalScore = 1.0
@@ -232,6 +239,13 @@ class NumentaDetector(AnomalyDetector):
         estimationSamples=self.probationaryPeriod-self.numentaLearningPeriod,
         reestimationPeriod=self.genericConfig["reestimationPeriod"]
       )
+    
+    if self.genericConfig["OSE"]:
+        self.cadose = ContextualAnomalyDetectorOSE (
+          minValue = self.inputMin,
+          maxValue = self.inputMax,
+          restPeriod = self.probationaryPeriod / 5.0,
+          )
 
 
   def _setupEncoderParams(self, encoderParams):
