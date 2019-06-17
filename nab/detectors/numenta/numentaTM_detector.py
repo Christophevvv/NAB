@@ -32,6 +32,7 @@ except:
   from nupic.frameworks.opf.modelfactory import ModelFactory
 
 from nab.detectors.numenta.numenta_detector import NumentaDetector
+from nab.detectors.context_ose.cad_ose import ContextualAnomalyDetectorOSE
 
 
 
