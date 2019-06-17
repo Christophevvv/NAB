@@ -164,6 +164,7 @@ class NumentaDetector(AnomalyDetector):
 
     if self.genericConfig["OSE"]:
       anomalyScore = self.cadose.getAnomalyScore(inputData)
+      #finalScore = anomalyScore
       finalScore = max(finalScore,anomalyScore)
 
     if self.genericConfig["enableSpatialTrick"]:

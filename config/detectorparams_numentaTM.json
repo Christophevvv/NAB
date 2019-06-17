@@ -14,7 +14,8 @@
 	      "adaptiveMinMax": false,
 	      "missingValues": false,
 	      "missingThreshold": 5,
-	      "ignoreReset": true
+	      "ignoreReset": true,
+	      "OSE": false
 	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {

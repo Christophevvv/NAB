@@ -20,6 +20,8 @@
 
 from nab.detectors.context_ose.context_operator import ContextOperator
 
+SPATIAL_TOLERANCE = 0.05
+
 class ContextualAnomalyDetectorOSE(object):
 
   """
@@ -43,6 +45,10 @@ class ContextualAnomalyDetectorOSE(object):
     self.baseThreshold = baseThreshold
     self.maxActNeurons = maxActiveNeuronsNum
     self.numNormValueBits = numNormValueBits
+    
+    # Keep track of value range for spatial anomaly detection
+    self.minVal = None
+    self.maxVal = None
 
     self.maxBinValue = 2 ** self.numNormValueBits - 1.0
     self.fullValueRange = self.maxValue - self.minValue
@@ -57,6 +63,7 @@ class ContextualAnomalyDetectorOSE(object):
     self.potentialNewContexts = []
 
     self.aScoresHistory = [ 1.0 ]
+    
 
 
   def step(self, inpFacts):
@@ -132,6 +139,24 @@ class ContextualAnomalyDetectorOSE(object):
       returnedAnomalyScore = currentAnomalyScore
     else :
       returnedAnomalyScore = 0.0
+    
+    # Get the value
+#     value = inputData["value"]
+#     spatialAnomaly = False
+#     if self.minVal != self.maxVal:
+#       tolerance = (self.maxVal - self.minVal) * SPATIAL_TOLERANCE
+#       maxExpected = self.maxVal + tolerance
+#       minExpected = self.minVal - tolerance
+#       if value > maxExpected or value < minExpected:
+#         spatialAnomaly = True
+#     if self.maxVal is None or value > self.maxVal:
+#       self.maxVal = value
+#     if self.minVal is None or value < self.minVal:
+#       self.minVal = value
+#     
+#     if spatialAnomaly:
+#       returnedAnomalyScore = 1
+#       currentAnomalyScore = 1
 
     self.aScoresHistory.append(currentAnomalyScore)
 

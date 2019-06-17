@@ -110,6 +110,13 @@ class NumentaTMDetector(NumentaDetector):
         estimationSamples=self.probationaryPeriod-self.numentaLearningPeriod,
         reestimationPeriod=self.genericConfig["reestimationPeriod"]
       )
+      
+    if self.genericConfig["OSE"]:
+      self.cadose = ContextualAnomalyDetectorOSE (
+        minValue = self.inputMin,
+        maxValue = self.inputMax,
+        restPeriod = self.probationaryPeriod / 5.0,
+      )
 
 
   def _setupEncoderParams(self, encoderParams):
