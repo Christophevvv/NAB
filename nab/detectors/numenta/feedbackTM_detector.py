@@ -169,7 +169,7 @@ class FeedbackTMDetector(AnomalyDetector):
     else:
       finalScore = rawScore
       
-    if self.genericConfig["OSE"]:
+    if self.ccConfig["OSE"]:
       anomalyScore = self.cadose.getAnomalyScore(inputData)
       #finalScore = anomalyScore
       finalScore = max(finalScore,anomalyScore)      
