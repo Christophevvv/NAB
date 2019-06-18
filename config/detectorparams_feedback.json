@@ -117,7 +117,8 @@
 					"ApicalMatch": true,
 					"reducedBasalPct": 0.8,
 		  "initialPermanenceApical": 0.21,
-		  "enablePunishment": false
+		  "enablePunishment": false,
+		  "OSE": false
 	      }
 	    }
 	  }

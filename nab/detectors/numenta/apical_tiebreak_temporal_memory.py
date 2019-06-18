@@ -66,15 +66,15 @@ class ApicalTiebreakTemporalMemory(object):
                permanenceIncrement=0.1,
                permanenceDecrement=0.1,
                basalPredictedSegmentDecrement=0,#0.0005,
-               apicalPredictedSegmentDecrement=0,#0.0005,
+               apicalPredictedSegmentDecrement=0.0005,
                maxSynapsesPerSegment=-1,
                useApicalModulationBasalThreshold=True,
                useApicalTiebreak=False,
                useIndependentApical=False,
                useApicalMatch=True,
                seed=42,
-               activationThresholdApical = 13,
-               minThresholdApical = 10,
+               activationThresholdApical = 13, #13
+               minThresholdApical = 10, #10
                sampleSizeApical = 20,
                initialPermanenceApical = 0.21,
                verbosity=0):
@@ -242,6 +242,7 @@ class ApicalTiebreakTemporalMemory(object):
      apicalPotentialOverlaps) = self._calculateApicalSegmentActivity(
        self.apicalConnections, apicalInput, self.connectedPermanence,
        self.activationThresholdApical, self.minThresholdApical)
+     
 
     #removed if learn or ...
     if self.useApicalModulationBasalThreshold==False:
@@ -250,8 +251,10 @@ class ApicalTiebreakTemporalMemory(object):
       reducedBasalThresholdCells = np.unique(self.apicalConnections.mapSegmentsToCells(
         activeApicalSegments))
     
-    #print "number of cells predicted through apical" + str(len(self.apicalConnections.mapSegmentsToCells(
-    #    activeApicalSegments)))
+#     predicted = len(self.apicalConnections.mapSegmentsToCells(
+#         activeApicalSegments))
+#     if predicted > 0:
+#       print "number of cells predicted through apical" + str(predicted)
     #one = self.apicalConnections.mapSegmentsToCells(activeApicalSegments)
     #two = np.unique(self.apicalConnections.mapSegmentsToCells(activeApicalSegments))
     #assert(len(one) == len(two))

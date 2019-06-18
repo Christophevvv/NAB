@@ -27,6 +27,7 @@ from nupic.encoders.date import DateEncoder
 from corticalcolumn_new import CorticalColumn
 from nupic.bindings.algorithms import TemporalMemory
 import cv2
+from nab.detectors.context_ose.cad_ose import ContextualAnomalyDetectorOSE
 
 SPATIAL_TOLERANCE = 0.05
 
@@ -73,6 +74,7 @@ class FeedbackTMDetector(AnomalyDetector):
     self.anomalyCC = None
     
     self.timeCC = None
+    self.cadose = None
 
 
   def getAdditionalHeaders(self):
@@ -93,6 +95,7 @@ class FeedbackTMDetector(AnomalyDetector):
     self.value_encoder.encodeIntoArray(value,self.value)
     self.date_encoder.encodeIntoArray(timestamp,self.timestamp)
     self.delta_encoder.encodeIntoArray(abs(self.prevVal-value), self.delta_value)
+    #print self.timestamp
     #save value
     self.prevVal = value
     
@@ -133,9 +136,9 @@ class FeedbackTMDetector(AnomalyDetector):
 #       #print rawScore
 #       print value
 #       self.visualizeCC()
-#     if timestamp.hour == 9 and timestamp.minute == 0:
+#     if (timestamp.hour >= 8 and timestamp.minute >= 50):
 #       #print self.timestamp.nonzero()[0]
-#       #self.visualizeCC()
+#       self.visualizeCC()
 #       print rawScore
     #self.corticalColumn.getAnomalyScore()[0] #column score
     
@@ -165,6 +168,11 @@ class FeedbackTMDetector(AnomalyDetector):
 #         finalScore = min(logScore * math.exp(0.5*rawScoreDelta),1)
     else:
       finalScore = rawScore
+      
+    if self.genericConfig["OSE"]:
+      anomalyScore = self.cadose.getAnomalyScore(inputData)
+      #finalScore = anomalyScore
+      finalScore = max(finalScore,anomalyScore)      
 
     if self.ccConfig["enableSpatialTrick"]:
       if spatialAnomaly:
@@ -329,6 +337,12 @@ class FeedbackTMDetector(AnomalyDetector):
         estimationSamples=self.probationaryPeriod-numentaLearningPeriod,
         #historicWindowSize=1000,
         reestimationPeriod=100
+      )
+    if self.ccConfig["OSE"]:
+      self.cadose = ContextualAnomalyDetectorOSE (
+        minValue = self.inputMin,
+        maxValue = self.inputMax,
+        restPeriod = self.probationaryPeriod / 5.0,
       )
       
   def initializeHierarchy(self):
