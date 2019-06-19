@@ -75,6 +75,7 @@ class NumentaDetector(AnomalyDetector):
     self.cadose = None
     self.relativePath = None
     self.spatialDetector = SpatialDetector(*args,**kwargs)
+    self.spatialDetector.initialize()
 
 
   def getAdditionalHeaders(self):
