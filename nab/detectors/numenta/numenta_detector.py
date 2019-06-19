@@ -170,6 +170,8 @@ class NumentaDetector(AnomalyDetector):
     if self.genericConfig["OSE"]:
       anomalyScore = self.cadose.getAnomalyScore(inputData)
       #finalScore = anomalyScore
+      if self.genericConfig["rescaleOSE"]:
+        anomalyScore = anomalyScore * (2.0/3)
       finalScore = max(finalScore,anomalyScore)
       
     if self.genericConfig["SPATIAL"]:

@@ -16,6 +16,7 @@
 	    "missingThreshold": 5,
 	    "ignoreReset": true,
 	    "OSE": false,
+	    "rescaleOSE": false,
 	    "SPATIAL": false
 	  },	  
 	  "modelConfig": {
