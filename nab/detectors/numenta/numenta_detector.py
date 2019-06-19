@@ -172,7 +172,7 @@ class NumentaDetector(AnomalyDetector):
       finalScore = max(finalScore,anomalyScore)
       
     if self.genericConfig["SPATIAL"]:
-      anomalyScore = self.spatialDetector.handleRecords(inputData)[0]
+      anomalyScore = self.spatialDetector.handleRecord(inputData)[0]
       finalScore = max(finalScore,anomalyScore)
 
     if self.genericConfig["enableSpatialTrick"]:
