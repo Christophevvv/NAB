@@ -51,7 +51,7 @@ class NumentaTMDetector(NumentaDetector):
   def initialize(self):
     rangePadding = abs(self.inputMax - self.inputMin) * 0.2
     if not (self.parameters == None):
-
+      print "parameters found!"
       self.genericConfig = self.parameters["generic"]
       minVal=self.inputMin-rangePadding
       maxVal=self.inputMax+rangePadding
