@@ -31,6 +31,10 @@ except:
   from nupic.frameworks.opf.modelfactory import ModelFactory
 
 from nab.detectors.base import AnomalyDetector
+from nupic.algorithms import anomaly
+from nupic.algorithms.anomaly_likelihood import AnomalyLikelihood
+import numpy as np
+
 
 # Fraction outside of the range of values seen so far that will be considered
 # a spatial anomaly regardless of the anomaly likelihood calculation. This
@@ -53,8 +57,18 @@ class SpatialDetector(AnomalyDetector):
     self.minVal = None
     self.maxVal = None
     
-    self.upper = self.mean + self.std
-    self.lower = self.mean - self.std
+    #self.upper = self.mean + self.std
+    #self.lower = self.mean - self.std
+    
+#     self.anomalyScore = 0
+#     self.anomalyDetector = anomaly.Anomaly(mode='pure')
+    self.anomalyLikelihood = AnomalyLikelihood()
+    self.history = []
+    #self.currentAnomalyScore = 0
+    #self.useAnomaly = False  
+    
+    self.index = 0
+    self.historySize = 8640  
     
 
 
@@ -69,43 +83,83 @@ class SpatialDetector(AnomalyDetector):
     Internally to NuPIC "anomalyScore" corresponds to "likelihood_score"
     and "rawScore" corresponds to "anomaly_score". Sorry about that.
     """
-
+    finalScore = 0.0
     # Get the value
     value = inputData["value"]
+    if self.index < self.probationaryPeriod:
+      self.history.append(value)
+      self.index += 1
+    else:
+      anomalyProbability = self.computeAnomalyProbability(value)
+      finalScore = AnomalyLikelihood.computeLogLikelihood(1-anomalyProbability)
+      self.history.append(value)
+      
     
     
-    finalScore = 0
-    
-    # Update min/max values and check if there is a spatial anomaly
-    spatialAnomaly = False
-    if self.minVal != self.maxVal:
-      tolerance = (self.maxVal - self.minVal) * SPATIAL_TOLERANCE
-      maxExpected = self.maxVal + tolerance
-      minExpected = self.minVal - tolerance
-      if value > maxExpected or value < minExpected:
-        spatialAnomaly = True
-    if self.maxVal is None or value > self.maxVal:
-      self.maxVal = value
-    if self.minVal is None or value < self.minVal:
-      self.minVal = value
- 
-    if spatialAnomaly:
-#       if value > self.upper or value < self.lower:      
-      finalScore = 1.0
-#     if value > self.upper:
+#     finalScore = 0
+#     
+#     # Update min/max values and check if there is a spatial anomaly
+#     spatialAnomaly = False
+#     if self.minVal != self.maxVal:
+#       tolerance = (self.maxVal - self.minVal) * SPATIAL_TOLERANCE
+#       maxExpected = self.maxVal + tolerance
+#       minExpected = self.minVal - tolerance
+#       if value > maxExpected or value < minExpected:
+#         spatialAnomaly = True
+#     if self.maxVal is None or value > self.maxVal:
+#       self.maxVal = value
+#     if self.minVal is None or value < self.minVal:
+#       self.minVal = value
+#  
+#     if spatialAnomaly:
+# #       if value > self.upper or value < self.lower:      
 #       finalScore = 1.0
-#     if value < self.lower:
-#       finalScore = 1.0
-#     if value > self.maxValue:
-#       finalScore = 1.0
-#     elif value < self.minValue:
-#       finalScore = 1.0
-#     else:
-#       finalScore = 0
+# #     if value > self.upper:
+# #       finalScore = 1.0
+# #     if value < self.lower:
+# #       finalScore = 1.0
+# #     if value > self.maxValue:
+# #       finalScore = 1.0
+# #     elif value < self.minValue:
+# #       finalScore = 1.0
+# #     else:
+# #       finalScore = 0
 
     return (finalScore,0)
 
 
   def initialize(self):
     pass
+  
+  def computeAnomalyProbability(self,input):
+      values = np.asarray(self.history)
+      distributionParams = {}
+      window = values[-self.historySize:]
+      distributionParams["mean"] = np.mean(window)
+      distributionParams["stdev"] = np.std(window)
+      return self.tailProbability(input,distributionParams)
+
+  def tailProbability(self, x, distributionParams):
+      """
+      Given the normal distribution specified by the mean and standard deviation
+      in distributionParams, return the probability of getting samples further
+      from the mean. For values above the mean, this is the probability of getting
+      samples > x and for values below the mean, the probability of getting
+      samples < x. This is the Q-function: the tail probability of the normal distribution.
+
+      :param distributionParams: dict with 'mean' and 'stdev' of the distribution
+      """
+      if "mean" not in distributionParams or "stdev" not in distributionParams:
+          raise RuntimeError("Insufficient parameters to specify the distribution.")
+
+      if x < distributionParams["mean"]:
+          # Gaussian is symmetrical around mean, so flip to get the tail probability
+          xp = 2 * distributionParams["mean"] - x
+          return self.tailProbability(xp, distributionParams)
+    
+      # Calculate the Q function with the complementary error function, explained
+      # here: http://www.gaussianwaves.com/2012/07/q-function-and-error-functions
+      z = (x - distributionParams["mean"]) / distributionParams["stdev"]
+      return 0.5 * math.erfc(z/1.4142)    
+  
 
