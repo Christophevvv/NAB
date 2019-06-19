@@ -15,7 +15,9 @@
 	      "missingValues": false,
 	      "missingThreshold": 5,
 	      "ignoreReset": true,
-	      "OSE": false
+	      "OSE": false,
+	      "rescaleOSE": false,
+	      "SPATIAL": false
 	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {
