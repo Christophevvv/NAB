@@ -6,7 +6,7 @@
 	    "inputPredictedField": "auto"
 	  },
 	  "generic": {
-	  	"smartResolution": true,
+	  	"smartResolution": false,
 	    "nrBuckets": 130,
 	    "valueOnly": false,
 	    "enableSpatialTrick": true,
