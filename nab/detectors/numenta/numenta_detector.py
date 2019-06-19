@@ -72,6 +72,7 @@ class NumentaDetector(AnomalyDetector):
     self.numentaLearningPeriod = None
     
     self.cadose = None
+    self.relativePath = None
 
 
   def getAdditionalHeaders(self):
@@ -85,6 +86,7 @@ class NumentaDetector(AnomalyDetector):
     Internally to NuPIC "anomalyScore" corresponds to "likelihood_score"
     and "rawScore" corresponds to "anomaly_score". Sorry about that.
     """
+    #return (0,0,0)
     # Send it to Numenta detector and get back the results
     reset = False
     if self.genericConfig["missingValues"]:
@@ -187,9 +189,12 @@ class NumentaDetector(AnomalyDetector):
       # Handle the corner case where the incoming min and max are the same
       if minVal == maxVal:
         maxVal = minVal + 1  
+      if self.minValue == self.maxValue:
+        self.maxValue = self.minValue + 1          
       valueEncoder = self.parameters["modelConfig"]["modelParams"]["sensorParams"]["encoders"]["value"]
       type = valueEncoder["type"]
       if self.genericConfig["smartResolution"]:
+
         resolution = max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"]))
       else:
         resolution = max(0.001,(maxVal - minVal) / float(self.genericConfig["nrBuckets"]))
@@ -214,7 +219,18 @@ class NumentaDetector(AnomalyDetector):
         valueEncoder.pop("resolution")
         if "seed" in valueEncoder:
           valueEncoder.pop("seed")
-        
+          
+      #RESOLUTION STUFF
+      f = open("resolution.txt","a+")
+      range_dumb = round(maxVal-minVal,2)
+      range_smart = round(self.maxValue - self.minValue,2)
+      res_dumb = round(max(0.001,(maxVal - minVal) / float(self.genericConfig["nrBuckets"])),2)
+      res_smart = round(max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"])),2)
+      f.write(str(self.relativePath) + "," + str(round(minVal,2)) + "," + str(round(maxVal,2)) + "," + str(range_dumb) 
+              + "," + str(res_dumb) + "," + str(round(self.minValue,2)) + "," + str(round(self.maxValue,2)) + "," 
+              + str(range_smart) + "," + str(res_smart) + "," + str(round(float(range_dumb)/range_smart,2)) + "\n")
+      f.close()
+      #END RESOLUTION STUFF
       #print valueEncoder
       self.sensorParams = valueEncoder #To check if equal to _setupEncoderParams assignment
     else:
@@ -261,3 +277,6 @@ class NumentaDetector(AnomalyDetector):
     encoderParams["value"]["name"] = "value"
  
     self.sensorParams = encoderParams["value"]
+    
+  def setPath(self,path):
+    self.relativePath = path

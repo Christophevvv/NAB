@@ -53,6 +53,10 @@ class AnomalyDetector(object):
     self.std = np.std(self.dataSet.data["value"])
     self.maxValue = self.mean + 2*self.std
     self.minValue = self.mean - 2*self.std
+    if self.maxValue > self.inputMax:
+      self.maxValue = self.inputMax
+    if self.minValue < self.inputMin:
+      self.minValue = self.inputMin
 
 
   def initialize(self):
@@ -144,7 +148,9 @@ def detectDataSet(args):
 
   print "%s: Beginning detection with %s for %s" % \
                                                 (i, detectorName, relativePath)
+  #detectorInstance.setPath(relativePath)
   detectorInstance.initialize()
+
 
   results = detectorInstance.run()
 
