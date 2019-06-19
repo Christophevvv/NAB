@@ -31,6 +31,7 @@ except:
 
 from nab.detectors.base import AnomalyDetector
 from nab.detectors.context_ose.cad_ose import ContextualAnomalyDetectorOSE
+from nab.detectors.numenta.spatial_detector import SpatialDetector
 import numpy as np
 
 # Fraction outside of the range of values seen so far that will be considered
@@ -73,6 +74,7 @@ class NumentaDetector(AnomalyDetector):
     
     self.cadose = None
     self.relativePath = None
+    self.spatialDetector = SpatialDetector(*args,**kwargs)
 
 
   def getAdditionalHeaders(self):
@@ -167,6 +169,10 @@ class NumentaDetector(AnomalyDetector):
     if self.genericConfig["OSE"]:
       anomalyScore = self.cadose.getAnomalyScore(inputData)
       #finalScore = anomalyScore
+      finalScore = max(finalScore,anomalyScore)
+      
+    if self.genericConfig["SPATIAL"]:
+      anomalyScore = self.spatialDetector.handleRecords(inputData)[0]
       finalScore = max(finalScore,anomalyScore)
 
     if self.genericConfig["enableSpatialTrick"]:

@@ -62,13 +62,13 @@ class SpatialDetector(AnomalyDetector):
     
 #     self.anomalyScore = 0
 #     self.anomalyDetector = anomaly.Anomaly(mode='pure')
-    self.anomalyLikelihood = AnomalyLikelihood()
-    self.history = []
+    #self.s_anomalyLikelihood = AnomalyLikelihood()
+    self.s_history = []
     #self.currentAnomalyScore = 0
     #self.useAnomaly = False  
     
-    self.index = 0
-    self.historySize = 8640  
+    self.s_index = 0
+    self.s_historySize = 8640  
     
 
 
@@ -86,13 +86,13 @@ class SpatialDetector(AnomalyDetector):
     finalScore = 0.0
     # Get the value
     value = inputData["value"]
-    if self.index < self.probationaryPeriod:
-      self.history.append(value)
-      self.index += 1
+    if self.s_index < 2:#self.probationaryPeriod:
+      self.s_history.append(value)
+      self.s_index += 1
     else:
       anomalyProbability = self.computeAnomalyProbability(value)
       finalScore = AnomalyLikelihood.computeLogLikelihood(1-anomalyProbability)
-      self.history.append(value)
+      self.s_history.append(value)
       
     
     
@@ -124,17 +124,29 @@ class SpatialDetector(AnomalyDetector):
 # #       finalScore = 1.0
 # #     else:
 # #       finalScore = 0
+#     valInput = value - self.inputMin
+#     valInput = round(float(valInput) / self.valRange,1)
+    anomalyScore = self.anomalyLikelihood.anomalyProbability(
+      value, finalScore, inputData["timestamp"])
+    logScore = self.anomalyLikelihood.computeLogLikelihood(anomalyScore)
+    finalScore = logScore
 
     return (finalScore,0)
 
 
   def initialize(self):
-    pass
+    # Initialize the anomaly likelihood object
+    self.numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
+    self.anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood(
+        learningPeriod=self.numentaLearningPeriod,
+        estimationSamples=self.probationaryPeriod-self.numentaLearningPeriod,
+        reestimationPeriod=100
+    )
   
   def computeAnomalyProbability(self,input):
-      values = np.asarray(self.history)
+      values = np.asarray(self.s_history)
       distributionParams = {}
-      window = values[-self.historySize:]
+      window = values[-self.s_historySize:]
       distributionParams["mean"] = np.mean(window)
       distributionParams["stdev"] = np.std(window)
       return self.tailProbability(input,distributionParams)
@@ -159,6 +171,8 @@ class SpatialDetector(AnomalyDetector):
     
       # Calculate the Q function with the complementary error function, explained
       # here: http://www.gaussianwaves.com/2012/07/q-function-and-error-functions
+      if distributionParams["stdev"] == 0:
+        distributionParams["stdev"] = 1
       z = (x - distributionParams["mean"]) / distributionParams["stdev"]
       return 0.5 * math.erfc(z/1.4142)    
   
