@@ -85,6 +85,7 @@ class NumentaDetector(AnomalyDetector):
       parameters2["generic"]["doubleTM"] = False
       #print parameters2
       parameters2["generic"]["smartResolution"] = 1
+      parameters2["generic"]["nrBuckets"] = 130
       self.TM2 = NumentaDetector(copy.deepcopy(self.dataSet),
                                  copy.deepcopy(self.probationaryPercent),
                                  parameters2)
