@@ -17,7 +17,8 @@
 	    "ignoreReset": true,
 	    "OSE": false,
 	    "rescaleOSE": false,
-	    "SPATIAL": false
+	    "SPATIAL": false,
+	    "doubleTM": false
 	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {

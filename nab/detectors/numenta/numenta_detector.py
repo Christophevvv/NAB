@@ -33,6 +33,7 @@ from nab.detectors.base import AnomalyDetector
 from nab.detectors.context_ose.cad_ose import ContextualAnomalyDetectorOSE
 from nab.detectors.numenta.spatial_detector import SpatialDetector
 import numpy as np
+import copy
 
 # Fraction outside of the range of values seen so far that will be considered
 # a spatial anomaly regardless of the anomaly likelihood calculation. This
@@ -74,8 +75,21 @@ class NumentaDetector(AnomalyDetector):
     
     self.cadose = None
     self.relativePath = None
-    self.spatialDetector = SpatialDetector(*args,**kwargs)
-    self.spatialDetector.initialize()
+    #self.spatialDetector = SpatialDetector(*args,**kwargs)
+    #self.spatialDetector.initialize()
+    #print self.parameters["generic"]["doubleTM"]
+    #print self.dataSet.data.shape
+    if self.parameters["generic"]["doubleTM"]:
+      #print self.parameters["generic"]["doubleTM"]
+      parameters2 = copy.deepcopy(self.parameters)
+      parameters2["generic"]["doubleTM"] = False
+      #print parameters2
+      parameters2["generic"]["smartResolution"] = 1
+      self.TM2 = NumentaDetector(copy.deepcopy(self.dataSet),
+                                 copy.deepcopy(self.probationaryPercent),
+                                 parameters2)
+      #self.TM2.initialize()
+      #print "initialized"
 
 
   def getAdditionalHeaders(self):
@@ -177,7 +191,13 @@ class NumentaDetector(AnomalyDetector):
     if self.genericConfig["SPATIAL"]:
       anomalyScore = self.spatialDetector.handleRecord(inputData)[0]
       finalScore = max(finalScore,anomalyScore)
-
+      
+    if self.parameters["generic"]["doubleTM"]:
+      #print "perform"
+      score = self.TM2.handleRecord(inputData)[0]
+      #print "back"
+      finalScore = max(finalScore,score)
+      
     if self.genericConfig["enableSpatialTrick"]:
       if spatialAnomaly:
         finalScore = 1.0
@@ -230,15 +250,15 @@ class NumentaDetector(AnomalyDetector):
           valueEncoder.pop("seed")
           
       #RESOLUTION STUFF
-      f = open("resolution.txt","a+")
-      range_dumb = round(maxVal-minVal,2)
-      range_smart = round(self.maxValue - self.minValue,2)
-      res_dumb = round(max(0.001,(maxVal - minVal) / float(self.genericConfig["nrBuckets"])),2)
-      res_smart = round(max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"])),2)
-      f.write(str(self.relativePath) + "," + str(round(minVal,2)) + "," + str(round(maxVal,2)) + "," + str(range_dumb) 
-              + "," + str(res_dumb) + "," + str(round(self.minValue,2)) + "," + str(round(self.maxValue,2)) + "," 
-              + str(range_smart) + "," + str(res_smart) + "," + str(round(float(range_dumb)/range_smart,2)) + "\n")
-      f.close()
+#       f = open("resolution.txt","a+")
+#       range_dumb = round(maxVal-minVal,2)
+#       range_smart = round(self.maxValue - self.minValue,2)
+#       res_dumb = round(max(0.001,(maxVal - minVal) / float(self.genericConfig["nrBuckets"])),2)
+#       res_smart = round(max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"])),2)
+#       f.write(str(self.relativePath) + "," + str(round(minVal,2)) + "," + str(round(maxVal,2)) + "," + str(range_dumb) 
+#               + "," + str(res_dumb) + "," + str(round(self.minValue,2)) + "," + str(round(self.maxValue,2)) + "," 
+#               + str(range_smart) + "," + str(res_smart) + "," + str(round(float(range_dumb)/range_smart,2)) + "\n")
+#       f.close()
       #END RESOLUTION STUFF
       #print valueEncoder
       self.sensorParams = valueEncoder #To check if equal to _setupEncoderParams assignment
@@ -272,6 +292,8 @@ class NumentaDetector(AnomalyDetector):
           maxValue = self.inputMax,
           restPeriod = self.probationaryPeriod / 5.0,
           )
+    if self.parameters["generic"]["doubleTM"]:
+      self.TM2.initialize()  
 
 
   def _setupEncoderParams(self, encoderParams):
