@@ -75,6 +75,12 @@ class FeedbackTMDetector(AnomalyDetector):
     
     self.timeCC = None
     self.cadose = None
+    
+    self.stepsize = None
+    self.prevTimestamp = None
+    self.dataIndex = 0
+    self.dataWindows = []
+    self.numentaLearningPeriod = None    
 
 
   def getAdditionalHeaders(self):
@@ -88,6 +94,29 @@ class FeedbackTMDetector(AnomalyDetector):
     Internally to NuPIC "anomalyScore" corresponds to "likelihood_score"
     and "rawScore" corresponds to "anomaly_score". Sorry about that.
     """
+    reset = False
+    if self.ccConfig["missingValues"]:
+      timestamp = inputData["timestamp"]
+      if self.prevTimestamp == None:
+        self.prevTimestamp = timestamp
+      else:
+        duration = timestamp - self.prevTimestamp
+        if self.dataIndex < self.numentaLearningPeriod:
+          self.dataWindows.append(duration.total_seconds())
+        elif self.dataIndex == self.numentaLearningPeriod:
+          arr = np.asarray(self.dataWindows)
+          arr.sort()          
+          self.stepsize = np.median(arr)
+        else:
+          if duration.total_seconds() > self.ccConfig["missingThreshold"]*self.stepsize:
+            reset = True
+            self.corticalColumn.reset()
+          #else:
+            #print "EQUAL"
+      self.prevTimestamp = timestamp
+      self.dataIndex += 1    
+    
+    
     # Get the value
     value = inputData["value"]
     timestamp = inputData["timestamp"]
@@ -159,11 +188,14 @@ class FeedbackTMDetector(AnomalyDetector):
       self.minVal = value
 
     if self.useLikelihood:
-      # Compute log(anomaly likelihood)
-      anomalyScore = self.anomalyLikelihood.anomalyProbability(
-        inputData["value"], rawScore, inputData["timestamp"])
-      logScore = self.anomalyLikelihood.computeLogLikelihood(anomalyScore)
-      finalScore = logScore
+      if reset and self.ccConfig["ignoreReset"]:
+        finalScore = 0.0
+      else:      
+        # Compute log(anomaly likelihood)
+        anomalyScore = self.anomalyLikelihood.anomalyProbability(
+          inputData["value"], rawScore, inputData["timestamp"])
+        logScore = self.anomalyLikelihood.computeLogLikelihood(anomalyScore)
+        finalScore = logScore
 #       if rawScore > 0.5:
 #         finalScore = min(logScore * math.exp(0.5*rawScoreDelta),1)
     else:
@@ -172,7 +204,10 @@ class FeedbackTMDetector(AnomalyDetector):
     if self.ccConfig["OSE"]:
       anomalyScore = self.cadose.getAnomalyScore(inputData)
       #finalScore = anomalyScore
-      finalScore = max(finalScore,anomalyScore)      
+      if self.ccConfig["rescaleOSE"]:
+        anomalyScore = anomalyScore * (2.0/3)      
+      finalScore = max(finalScore,anomalyScore) 
+      
 
     if self.ccConfig["enableSpatialTrick"]:
       if spatialAnomaly:

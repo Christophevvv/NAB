@@ -195,6 +195,10 @@ class CorticalColumn():
     def setSPlearning(self,learn):
         ''' Set whether or not the Spatial Pooler learns '''
         self.SPlearning = learn
+        
+    def reset(self):
+      self.layer3.reset()
+      self.layer4.reset()
 
 
 class Layer3():
@@ -265,6 +269,9 @@ class Layer3():
         Return the winner cells of the crossColumnTM
         '''
         return self.crossColumnTM.getWinnerCells()
+      
+    def reset(self):
+      self.crossColumnTM.reset()
 
 class Layer4():
     '''
