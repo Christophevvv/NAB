@@ -247,6 +247,8 @@ class FeedbackTMDetector(AnomalyDetector):
     rangePadding = abs(self.inputMax - self.inputMin) * 0.2
     minVal=self.inputMin-rangePadding
     maxVal=self.inputMax+rangePadding
+    if self.minValue == self.maxValue:
+        self.maxValue = self.minValue + 1 
     #print ((maxVal - minVal) /130)
     if self.ccConfig["smartResolution"]:
       resolution = max(0.001,(self.maxValue - self.minValue) / float(self.ccConfig["nrBuckets"]))#max(0.001,(maxVal - minVal) / 130)
