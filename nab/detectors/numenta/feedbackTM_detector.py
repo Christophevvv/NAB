@@ -366,15 +366,13 @@ class FeedbackTMDetector(AnomalyDetector):
 #                                   seed=1960)
 
     if self.useLikelihood:
-      # Initialize the anomaly likelihood object
-      numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
-      #print self.probationaryPeriod-numentaLearningPeriod
+      self.numentaLearningPeriod = int(math.floor(self.probationaryPeriod / 2.0))
       self.anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood(
-        learningPeriod=numentaLearningPeriod,
-        estimationSamples=self.probationaryPeriod-numentaLearningPeriod,
-        #historicWindowSize=1000,
+        learningPeriod=self.numentaLearningPeriod,
+        estimationSamples=self.probationaryPeriod-self.numentaLearningPeriod,
         reestimationPeriod=100
       )
+
     if self.ccConfig["OSE"]:
       self.cadose = ContextualAnomalyDetectorOSE (
         minValue = self.inputMin,
