@@ -119,7 +119,7 @@
 		  "initialPermanenceApical": 0.21,
 		  "enablePunishment": false,
 		  "OSE": false,
-		  "rescaleOSE": false
+		  "rescaleOSE": false,
 	    "missingValues": false,
 	    "missingThreshold": 5,
 	    "ignoreReset": true	  
