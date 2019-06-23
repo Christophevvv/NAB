@@ -59,6 +59,14 @@ class AnomalyDetector(object):
       self.maxValue = self.inputMax
     if self.minValue < self.inputMin:
       self.minValue = self.inputMin
+    #compute timstamp range
+    timestamps = self.dataSet.data["timestamp"]
+    windows = []
+    for i in xrange(int(self.probationaryPeriod)):
+      windows.append((self.dataSet.data["timestamp"][i+1]-self.dataSet.data["timestamp"][i]).total_seconds())
+    range = np.median(np.asarray(windows))
+    self.radius = float(range)/3600
+    
 
 
   def initialize(self):
@@ -155,6 +163,7 @@ def detectDataSet(args):
 
 
   results = detectorInstance.run()
+  #detectorInstance.writeResets()
 
   # label=1 for relaxed windows, 0 otherwise
   results["label"] = labels

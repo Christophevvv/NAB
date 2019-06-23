@@ -6,19 +6,21 @@
 	    "inputPredictedField": "auto"
 	  },
 	  "generic": {
-	  	"smartResolution": false,
+	  	"smartResolution": true,
 	    "nrBuckets": 130,
 	    "valueOnly": false,
-	    "enableSpatialTrick": true,
+	    "enableSpatialTrick": false,
 	    "reestimationPeriod": 100,
 	    "adaptiveMinMax": false,
 	    "missingValues": false,
-	    "missingThreshold": 5,
+	    "missingThreshold": 3,
 	    "ignoreReset": true,
 	    "OSE": false,
 	    "rescaleOSE": false,
 	    "SPATIAL": false,
-	    "doubleTM": false
+	    "doubleTM": false,
+	    "smartTime": true,
+	    "radius": 5
 	  },	  
 	  "modelConfig": {
 	    "aggregationInfo": {
@@ -44,7 +46,7 @@
 	            "type": "DateEncoder",
 	            "timeOfDay": [
 	              21,
-	              9.49
+	              4
 	            ],
 	            "fieldname": "timestamp",
 	            "name": "timestamp"

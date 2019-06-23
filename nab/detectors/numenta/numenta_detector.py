@@ -75,6 +75,7 @@ class NumentaDetector(AnomalyDetector):
     
     self.cadose = None
     self.relativePath = None
+    self.nrResets = 0
     #self.spatialDetector = SpatialDetector(*args,**kwargs)
     #self.spatialDetector.initialize()
     #print self.parameters["generic"]["doubleTM"]
@@ -119,8 +120,11 @@ class NumentaDetector(AnomalyDetector):
           arr = np.asarray(self.dataWindows)
           arr.sort()          
           self.stepsize = np.median(arr)
-          #print "Settled on stepsize"
-          #print self.stepsize
+          print "Settled on stepsize"
+          print self.stepsize
+#           f = open("stepsize_time.txt","a+")
+#           f.write(str(self.relativePath) + ": " + str(self.stepsize) + "\n")
+#           f.close()
 #         if self.stepsize == None:
 #           self.stepsize = duration.total_seconds()
         else:
@@ -139,11 +143,12 @@ class NumentaDetector(AnomalyDetector):
             #print "RESETTING"
             reset = True
             self.model.resetSequenceStates()
+            self.nrResets += 1
           #else:
             #print "EQUAL"
       self.prevTimestamp = timestamp
       self.dataIndex += 1
-          
+    #return (0,0,0)   
       
     
     result = self.model.run(inputData)
@@ -250,9 +255,12 @@ class NumentaDetector(AnomalyDetector):
         if "seed" in valueEncoder:
           valueEncoder.pop("seed")
           
+      if self.genericConfig["smartTime"]:
+        self.modelConfig["modelParams"]["sensorParams"]["encoders"]["timestamp_timeOfDay"]["timeOfDay"] = [21,self.genericConfig["radius"]*self.radius]
+        print self.modelConfig["modelParams"]["sensorParams"]["encoders"]["timestamp_timeOfDay"] 
       #RESOLUTION STUFF
 #       f = open("resolution.txt","a+")
-#       range_dumb = round(maxVal-minVal,2)
+#       range_dumb = round(maxVal-minVal,2)`
 #       range_smart = round(self.maxValue - self.minValue,2)
 #       res_dumb = round(max(0.001,(maxVal - minVal) / float(self.genericConfig["nrBuckets"])),2)
 #       res_smart = round(max(0.001,(self.maxValue - self.minValue) / float(self.genericConfig["nrBuckets"])),2)
@@ -312,3 +320,8 @@ class NumentaDetector(AnomalyDetector):
     
   def setPath(self,path):
     self.relativePath = path
+    
+  def writeResets(self):
+    f = open("resets.txt","a+")
+    f.write(str(self.relativePath)+ " & " + str(self.nrResets) + "\n")
+    f.close()
